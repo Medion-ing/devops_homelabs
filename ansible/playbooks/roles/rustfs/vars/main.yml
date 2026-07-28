@@ -1,0 +1,5 @@
+---
+rustfs_systemd_unit_path: "/etc/systemd/system/{{ rustfs_service_name }}.service"
+rustfs_env_file_path: "/etc/default/rustfs"
+rustfs_supported_archs:
+  - x86_64

@@ -1,0 +1,6 @@
+---
+- name: Install VictoriaMetrics single
+  ansible.builtin.import_tasks: install.yml
+
+- name: Configure VictoriaMetrics single
+  ansible.builtin.import_tasks: configure.yml

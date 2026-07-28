@@ -1,0 +1,6 @@
+---
+- name: Installer et lancer OpenTofu pour provisionner RustFS
+  hosts: rustfs
+  become: true
+  roles:
+    - opentofu

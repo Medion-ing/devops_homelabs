@@ -1,0 +1,39 @@
+---
+# Connexion Keycloak admin
+keycloak_config_keycloak_url: "http://192.168.1.124:8080"
+
+
+# Realm
+keycloak_config_keycloak_realm: "rustfs"
+keycloak_config_keycloak_realm_display_name: "RustFS POC"
+
+# Client OIDC
+keycloak_config_keycloak_client_redirect_uris:
+  - "http://192.168.1.124:9001/*"
+
+# Fédération LDAP
+keycloak_config_ldap_federation_name: "openldap-homelab"
+keycloak_config_ldap_url: "ldap://127.0.0.1:389"
+keycloak_config_ldap_bind_dn: "cn=admin,dc=homelab,dc=local"
+keycloak_config_ldap_bind_password: "LdapAdmin2026!"
+keycloak_config_ldap_base_dn: "dc=homelab,dc=local"
+keycloak_config_ldap_users_dn: "ou=users,dc=homelab,dc=local"
+keycloak_config_ldap_groups_dn: "ou=groups,dc=homelab,dc=local"
+keycloak_config_admin_realms_path: "{{ keycloak_config_keycloak_url }}/admin/realms/{{ keycloak_config_keycloak_realm }}"
+keycloak_config_ldap_federation_matches: >-
+  {{ keycloak_config_ldap_federation_info.json
+     | selectattr('name', 'equalto', keycloak_config_ldap_federation_name)
+     | list }}
+keycloak_config_ldap_federation_match_id: >-
+  {{ keycloak_config_ldap_federation_matches
+     | map(attribute='id')
+     | first }}
+
+# Groupes RustFS → policies
+keycloak_config_keycloak_groups:
+  - name: "devlab-rw"
+    policy: "tofu-policy-readwrite"
+  - name: "datalab-ro"
+    policy: "tofu-policy-readonly"
+  - name: "sofa-wo"
+    policy: "tofu-policy-writeonly"

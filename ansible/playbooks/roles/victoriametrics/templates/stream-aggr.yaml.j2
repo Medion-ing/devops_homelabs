@@ -1,0 +1,39 @@
+{% for rule in victoriametrics_stream_aggr_rules %}
+- name: {{ rule.name }}
+  match:
+{% for selector in rule.match %}
+    - '{{ selector }}'
+{% endfor %}
+  interval: {{ rule.interval }}
+{% if rule.by is defined and rule.by | length > 0 %}
+  by:
+{% for label in rule.by %}
+    - {{ label }}
+{% endfor %}
+{% endif %}
+{% if rule.without is defined and rule.without | length > 0 %}
+  without:
+{% for label in rule.without %}
+    - {{ label }}
+{% endfor %}
+{% endif %}
+  outputs:
+{% for output in rule.outputs %}
+    - {{ output }}
+{% endfor %}
+{% if rule.keep_metric_names is defined %}
+  keep_metric_names: {{ rule.keep_metric_names | bool | lower }}
+{% endif %}
+{% if rule.ignore_old_samples is defined %}
+  ignore_old_samples: {{ rule.ignore_old_samples | bool | lower }}
+{% endif %}
+{% if rule.ignore_first_intervals is defined %}
+  ignore_first_intervals: {{ rule.ignore_first_intervals }}
+{% endif %}
+{% if rule.flush_on_shutdown is defined %}
+  flush_on_shutdown: {{ rule.flush_on_shutdown | bool | lower }}
+{% endif %}
+{% if rule.no_align_flush_to_interval is defined %}
+  no_align_flush_to_interval: {{ rule.no_align_flush_to_interval | bool | lower }}
+{% endif %}
+{% endfor %}

@@ -1,0 +1,70 @@
+---
+- name: "Rafraîchir le token admin"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_keycloak_url }}/realms/master/protocol/openid-connect/token"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      client_id: admin-cli
+      username: "{{ vault_keycloak_admin_user }}"
+      password: "{{ vault_keycloak_admin_password }}"
+      grant_type: password
+    status_code: 200
+  register: keycloak_config_keycloak_token
+  no_log: true
+
+- name: "Récupérer l'UUID interne du client rustfs-s3"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_keycloak_url }}/admin/realms/{{ keycloak_config_keycloak_realm }}/clients?clientId={{ vault_keycloak_client_id }}"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ keycloak_config_keycloak_token.json.access_token }}"
+    status_code: 200
+  register: keycloak_config_client_info
+
+- name: "Stocker l'UUID du client"
+  ansible.builtin.set_fact:
+    keycloak_config_keycloak_client_uuid: "{{ keycloak_config_client_info.json[0].id }}"
+
+- name: "Créer le mapper groupe → claim JWT 'policy'"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_admin_realms_path }}/clients/{{ keycloak_config_keycloak_client_uuid }}/protocol-mappers/models"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ keycloak_config_keycloak_token.json.access_token }}"
+      Content-Type: application/json
+    body_format: json
+    body:
+      name: "group-to-policy-claim"
+      protocol: "openid-connect"
+      protocolMapper: "oidc-group-membership-mapper"
+      consentRequired: false
+      config:
+        full.path: "false"
+        id.token.claim: "true"
+        access.token.claim: "true"
+        claim.name: "policy"
+        userinfo.token.claim: "true"
+    status_code: [201, 409]
+
+- name: "Créer le mapper email → claim JWT"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_admin_realms_path }}/clients/{{ keycloak_config_keycloak_client_uuid }}/protocol-mappers/models"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ keycloak_config_keycloak_token.json.access_token }}"
+      Content-Type: application/json
+    body_format: json
+    body:
+      name: "email-claim"
+      protocol: "openid-connect"
+      protocolMapper: "oidc-usermodel-property-mapper"
+      consentRequired: false
+      config:
+        userinfo.token.claim: "true"
+        user.attribute: "email"
+        id.token.claim: "true"
+        access.token.claim: "true"
+        claim.name: "email"
+        jsonType.label: "String"
+    status_code: [201, 409]

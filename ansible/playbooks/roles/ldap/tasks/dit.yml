@@ -1,0 +1,66 @@
+---
+- name: "Déployer le LDIF de base (OUs)"
+  ansible.builtin.template:
+    src: dit_base.ldif.j2
+    dest: /tmp/ldap_dit_base.ldif
+    mode: "0600"
+
+- name: "Créer les OUs de base"
+  ansible.builtin.command:
+    cmd: >
+      ldapadd -H ldap://127.0.0.1
+      -D "cn={{ ldap_admin_cn }},{{ ldap_keycloak_config_ldap_base_dn }}"
+      -w "{{ ldap_admin_password }}"
+      -f /tmp/ldap_dit_base.ldif
+  register: ldap_ou_result
+  changed_when: ldap_ou_result.rc == 0
+  failed_when:
+    - ldap_ou_result.rc != 0
+    - "'Already exists' not in ldap_ou_result.stderr"
+
+- name: "Déployer le LDIF des groupes"
+  ansible.builtin.template:
+    src: groups.ldif.j2
+    dest: /tmp/ldap_groups.ldif
+    mode: "0600"
+
+- name: "Créer les groupes"
+  ansible.builtin.command:
+    cmd: >
+      ldapadd -H ldap://127.0.0.1
+      -D "cn={{ ldap_admin_cn }},{{ ldap_keycloak_config_ldap_base_dn }}"
+      -w "{{ ldap_admin_password }}"
+      -f /tmp/ldap_groups.ldif
+  register: ldap_groups_result
+  changed_when: ldap_groups_result.rc == 0
+  failed_when:
+    - ldap_groups_result.rc != 0
+    - "'Already exists' not in ldap_groups_result.stderr"
+
+- name: "Déployer le LDIF des users"
+  ansible.builtin.template:
+    src: users.ldif.j2
+    dest: /tmp/ldap_users.ldif
+    mode: "0600"
+
+- name: "Créer les users"
+  ansible.builtin.command:
+    cmd: >
+      ldapadd -H ldap://127.0.0.1
+      -D "cn={{ ldap_admin_cn }},{{ ldap_keycloak_config_ldap_base_dn }}"
+      -w "{{ ldap_admin_password }}"
+      -f /tmp/ldap_users.ldif
+  register: ldap_users_result
+  changed_when: ldap_users_result.rc == 0
+  failed_when:
+    - ldap_users_result.rc != 0
+    - "'Already exists' not in ldap_users_result.stderr"
+
+- name: "Nettoyer les fichiers LDIF temporaires"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/ldap_dit_base.ldif
+    - /tmp/ldap_groups.ldif
+    - /tmp/ldap_users.ldif

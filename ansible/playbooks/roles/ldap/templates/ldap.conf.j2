@@ -1,0 +1,4 @@
+# Client LDAP — géré par Ansible
+BASE    {{ ldap_keycloak_config_ldap_base_dn }}
+URI     ldap://127.0.0.1:{{ ldap_port }}
+BINDDN  cn={{ ldap_admin_cn }},{{ ldap_keycloak_config_ldap_base_dn }}

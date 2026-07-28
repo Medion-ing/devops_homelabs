@@ -1,0 +1,237 @@
+{
+  "title": "Long-term HomeLab",
+  "filename": "10-long-term-homelab.json",
+  "rows": [
+    {
+      "title": "Remote write health",
+      "panels": [
+        {
+          "title": "Samples rate by site",
+          "description": "Débit agrégé des samples envoyés vers VictoriaMetrics.",
+          "unit": "short",
+          "expr": [
+            "sum by (site) (prometheus_remote_storage_samples_total:5m_by_instance_job_remote_name_site_url_rate_sum{site=~\"promox|virtualbox\"})"
+          ]
+        },
+        {
+          "title": "Failed rate by site",
+          "description": "Doit rester à 0 ou très proche.",
+          "unit": "short",
+          "expr": [
+            "sum by (site) (prometheus_remote_storage_samples_failed_total:5m_by_instance_job_remote_name_site_url_rate_sum{site=~\"promox|virtualbox\"})"
+          ]
+        },
+        {
+          "title": "Pending max by site",
+          "description": "Backlog maximum de la file remote write.",
+          "unit": "short",
+          "expr": [
+            "max by (site) (prometheus_remote_storage_samples_pending:5m_by_instance_job_remote_name_site_url_max{site=~\"promox|virtualbox\"})"
+          ]
+        },
+        {
+          "title": "Retries by site",
+          "description": "Retries d'enqueue et samples retried.",
+          "unit": "short",
+          "expr": [
+            "sum by (site) (prometheus_remote_storage_enqueue_retries_total:5m_by_instance_job_remote_name_site_url_rate_sum{site=~\"promox|virtualbox\"})",
+            "sum by (site) (prometheus_remote_storage_samples_retried_total:5m_by_instance_job_remote_name_site_url_rate_sum{site=~\"promox|virtualbox\"})"
+          ],
+          "alias": [
+            "enqueue_retries",
+            "samples_retried"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "CPU and load",
+      "panels": [
+        {
+          "title": "CPU by site and mode",
+          "description": "Activité CPU agrégée par site et mode.",
+          "unit": "short",
+          "expr": [
+            "sum by (site, mode) (node_cpu_seconds_total:5m_by_instance_mode_site_rate_sum{site=~\"promox|virtualbox\"})"
+          ]
+        },
+        {
+          "title": "CPU total by site",
+          "description": "CPU totale hors idle par site.",
+          "unit": "short",
+          "expr": [
+            "sum by (site) (node_cpu_seconds_total:5m_by_instance_mode_site_rate_sum{site=~\"promox|virtualbox\",mode!=\"idle\"})"
+          ]
+        },
+        {
+          "title": "Load by instance",
+          "description": "Charge système par instance.",
+          "unit": "short",
+          "expr": [
+            "node_load1:5m_by_instance_site_last{site=~\"promox|virtualbox\"}",
+            "node_load5:5m_by_instance_site_last{site=~\"promox|virtualbox\"}",
+            "node_load15:5m_by_instance_site_last{site=~\"promox|virtualbox\"}"
+          ],
+          "alias": [
+            "load1",
+            "load5",
+            "load15"
+          ]
+        },
+        {
+          "title": "Per-job CPU usage",
+          "description": "Vue process/exporters par job.",
+          "unit": "short",
+          "expr": [
+            "sum(rate(process_cpu_seconds_total{site=~\"promox|virtualbox\"}[5m])) by (job)"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Memory",
+      "panels": [
+        {
+          "title": "Memory available by instance",
+          "description": "Dernière mémoire disponible observée sur 5 minutes.",
+          "unit": "MB",
+          "expr": [
+            "node_memory_MemAvailable_bytes:5m_by_instance_site_last{site=~\"promox|virtualbox\"} / 1024 / 1024"
+          ]
+        },
+        {
+          "title": "Lowest memory by instance over 30m",
+          "description": "Plus bas niveau de mémoire observé sur 30 minutes.",
+          "unit": "MB",
+          "expr": [
+            "min_over_time(node_memory_MemAvailable_bytes:5m_by_instance_site_min{site=~\"promox|virtualbox\"}[30m]) / 1024 / 1024"
+          ]
+        },
+        {
+          "title": "Memory available by site",
+          "description": "Somme de la mémoire disponible par site.",
+          "unit": "GB",
+          "expr": [
+            "sum by (site) (node_memory_MemAvailable_bytes:5m_by_instance_site_last{site=~\"promox|virtualbox\"}) / 1024 / 1024 / 1024"
+          ]
+        },
+        {
+          "title": "Per-job RSS usage",
+          "description": "Mémoire résidente agrégée par job.",
+          "unit": "bytes",
+          "expr": [
+            "sum(process_resident_memory_bytes{site=~\"promox|virtualbox\"}) by (job)"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Filesystem",
+      "panels": [
+        {
+          "title": "Filesystem available by instance and mountpoint",
+          "description": "Libre disque par instance et point de montage.",
+          "unit": "GB",
+          "expr": [
+            "node_filesystem_avail_bytes:5m_by_instance_mountpoint_site_last{site=~\"promox|virtualbox\"} / 1024 / 1024 / 1024"
+          ]
+        },
+        {
+          "title": "Lowest filesystem available over 30m",
+          "description": "Plus bas niveau de libre disque sur 30 minutes.",
+          "unit": "GB",
+          "expr": [
+            "min_over_time(node_filesystem_avail_bytes:5m_by_instance_mountpoint_site_min{site=~\"promox|virtualbox\"}[30m]) / 1024 / 1024 / 1024"
+          ]
+        },
+        {
+          "title": "Filesystem total by instance and mountpoint",
+          "description": "Capacité totale disque.",
+          "unit": "GB",
+          "expr": [
+            "node_filesystem_size_bytes:5m_by_instance_mountpoint_site_last{site=~\"promox|virtualbox\"} / 1024 / 1024 / 1024"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Network",
+      "panels": [
+        {
+          "title": "Network receive by site",
+          "description": "Débit réseau entrant agrégé.",
+          "unit": "bytes",
+          "expr": [
+            "sum by (site) (node_network_receive_bytes_total:5m_by_device_instance_site_rate_sum{site=~\"promox|virtualbox\"})"
+          ]
+        },
+        {
+          "title": "Network transmit by site",
+          "description": "Débit réseau sortant agrégé.",
+          "unit": "bytes",
+          "expr": [
+            "sum by (site) (node_network_transmit_bytes_total:5m_by_device_instance_site_rate_sum{site=~\"promox|virtualbox\"})"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Availability",
+      "panels": [
+        {
+          "title": "Probe success last",
+          "description": "Dernier état de probe par job et instance.",
+          "unit": "short",
+          "expr": [
+            "probe_success:5m_by_instance_job_site_last{site=~\"promox|virtualbox\"}"
+          ]
+        },
+        {
+          "title": "Probe success minimum over 30m",
+          "description": "Permet de voir si une sonde est tombée à 0 dans les 30 dernières minutes.",
+          "unit": "short",
+          "expr": [
+            "min_over_time(probe_success:5m_by_instance_job_site_min{site=~\"promox|virtualbox\"}[30m])"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "VictoriaMetrics node",
+      "panels": [
+        {
+          "title": "VictoriaMetrics RSS",
+          "description": "Mémoire résidente du serveur VictoriaMetrics.",
+          "unit": "bytes",
+          "expr": [
+            "sum(process_resident_memory_bytes{job=\"victoria-metrics\"})"
+          ]
+        },
+        {
+          "title": "VictoriaMetrics CPU",
+          "description": "Consommation CPU du process VictoriaMetrics.",
+          "unit": "short",
+          "expr": [
+            "sum(rate(process_cpu_seconds_total{job=\"victoria-metrics\"}[5m]))"
+          ]
+        },
+        {
+          "title": "VictoriaMetrics disk read",
+          "description": "Lecture disque du process VictoriaMetrics.",
+          "unit": "bytes",
+          "expr": [
+            "sum(rate(process_io_storage_read_bytes_total{job=\"victoria-metrics\"}[5m]))"
+          ]
+        },
+        {
+          "title": "VictoriaMetrics disk write",
+          "description": "Écriture disque du process VictoriaMetrics.",
+          "unit": "bytes",
+          "expr": [
+            "sum(rate(process_io_storage_written_bytes_total{job=\"victoria-metrics\"}[5m]))"
+          ]
+        }
+      ]
+    }
+  ]
+}

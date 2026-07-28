@@ -1,0 +1,17 @@
+apiVersion: 1
+
+datasources:
+{% for ds in grafana_datasources %}
+  - name: "{{ ds.name }}"
+    type: "{{ ds.type }}"
+    access: "{{ ds.access | default('proxy') }}"
+    url: "{{ ds.url }}"
+    isDefault: {{ ds.isDefault | default(false) | ternary('true', 'false') }}
+    editable: {{ ds.editable | default(true) | ternary('true', 'false') }}
+{% if ds.jsonData is defined %}
+    jsonData:
+{% for key, value in ds.jsonData.items() %}
+      {{ key }}: {{ value | to_json }}
+{% endfor %}
+{% endif %}
+{% endfor %}

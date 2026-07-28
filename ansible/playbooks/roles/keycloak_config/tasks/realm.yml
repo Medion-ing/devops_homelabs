@@ -1,0 +1,41 @@
+---
+- name: "Obtenir un token admin Keycloak"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_keycloak_url }}/realms/master/protocol/openid-connect/token"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      client_id: admin-cli
+      username: "{{ vault_keycloak_admin_user }}"
+      password: "{{ vault_keycloak_admin_password }}"
+      grant_type: password
+    status_code: 200
+  register: keycloak_config_keycloak_token
+  no_log: true
+
+- name: "Vérifier si le realm rustfs existe déjà"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_keycloak_url }}/admin/realms/{{ keycloak_config_keycloak_realm }}"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ keycloak_config_keycloak_token.json.access_token }}"
+    status_code: [200, 404]
+  register: keycloak_config_realm_check
+
+- name: "Créer le realm rustfs"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_keycloak_url }}/admin/realms"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ keycloak_config_keycloak_token.json.access_token }}"
+      Content-Type: application/json
+    body_format: json
+    body:
+      realm: "{{ keycloak_config_keycloak_realm }}"
+      displayName: "{{ keycloak_config_keycloak_realm_display_name }}"
+      enabled: true
+      registrationAllowed: false
+      loginWithEmailAllowed: true
+      duplicateEmailsAllowed: false
+    status_code: 201
+  when: keycloak_config_realm_check.status == 404

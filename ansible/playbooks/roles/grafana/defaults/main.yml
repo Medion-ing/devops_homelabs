@@ -1,0 +1,107 @@
+---
+grafana_version: latest
+grafana_manage_repo: true
+
+grafana_yum_repo: "https://rpm.grafana.com"
+grafana_yum_key: "https://rpm.grafana.com/gpg.key"
+
+grafana_rhsm_subscription: ""
+grafana_rhsm_repo: ""
+
+grafana_apt_release_channel: stable
+grafana_apt_arch: "{{ 'arm64' if ansible_facts['architecture'] == 'aarch64' else 'amd64' }}"
+grafana_apt_repo_uri: "https://apt.grafana.com/"
+grafana_apt_repo: "deb [arch={{ grafana_apt_arch }} signed-by=/usr/share/keyrings/grafana.asc] {{ grafana_apt_repo_uri }} {{ grafana_apt_release_channel }} main"
+grafana_apt_key: "https://apt.grafana.com/gpg.key"
+grafana_apt_name: "grafana"
+
+grafana_use_provisioning: true
+grafana_provisioning_synced: false
+grafana_provisioning_dashboards_from_file_structure: false
+grafana_cap_net_bind_service: false
+
+grafana_ini_default:
+  instance_name: "{{ ansible_facts['fqdn'] | default(ansible_host) | default(inventory_hostname) }}"
+
+  paths:
+    logs: "/var/log/grafana"
+    data: "/var/lib/grafana"
+
+  server:
+    http_addr: "0.0.0.0"
+    http_port: 3000
+    domain: "{{ ansible_facts['fqdn'] | default(ansible_host) | default('localhost') }}"
+    protocol: http
+    root_url: "http://{{ ansible_facts['fqdn'] | default(ansible_host) | default('localhost') }}:3000/"
+    enforce_domain: false
+    socket: ""
+    cert_key: ""
+    cert_file: ""
+    enable_gzip: false
+    static_root_path: public
+    router_logging: false
+    serve_from_sub_path: false
+
+  security:
+    admin_user: "{{ vault_admin_grafana_user }}"
+    admin_password: "{{ vault_grafana_admin_password }}"
+
+  database:
+    type: sqlite3
+
+  users:
+    allow_sign_up: false
+    auto_assign_org_role: Viewer
+    default_theme: dark
+
+  auth: {}
+
+grafana_api_url: "{{ grafana_ini.server.root_url }}"
+
+grafana_ldap: {}
+
+grafana_plugins:
+  - victoriametrics-metrics-datasource
+
+grafana_dashboards: []
+
+grafana_dashboards_dir: "dashboards"
+
+grafana_alert_notifications: []
+grafana_alert_resources: {}
+
+grafana_datasources:
+  - name: "VictoriaMetrics"
+    type: "victoriametrics-metrics-datasource"
+    access: "proxy"
+    url: "http://192.168.1.85:8428"
+    isDefault: true
+    editable: true
+
+  - name: "Prometheus-proxmox"
+    type: "prometheus"
+    access: "proxy"
+    url: "http://192.168.1.102:9090"
+    isDefault: false
+    editable: true
+    jsonData:
+      prometheusType: "Prometheus"
+      prometheusVersion: "2.24.0"
+      timeInterval: "15s"
+
+  - name: "Prometheus-virtualbox"
+    type: "prometheus"
+    access: "proxy"
+    url: "http://192.168.1.55:9090"
+    isDefault: false
+    editable: true
+    jsonData:
+      prometheusType: "Prometheus"
+      prometheusVersion: "2.24.0"
+      timeInterval: "15s"
+
+grafana_api_keys: []
+
+grafana_api_keys_dir: "{{ lookup('env', 'HOME') }}/grafana/keys"
+
+grafana_environment: {}

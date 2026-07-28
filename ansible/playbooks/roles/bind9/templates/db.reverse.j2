@@ -1,0 +1,16 @@
+$TTL 3600
+@   IN  SOA ns1.{{ bind9_domain }}. admin.{{ bind9_domain }}. (
+            {{ bind9_zone_serial }} ; Serial
+            3600
+            900
+            604800
+            300 )
+
+    IN  NS  ns1.{{ bind9_domain }}.
+
+{% for host in groups['all'] %}
+{% if hostvars[host]['ansible_host'] is defined %}
+{% set last_octet = hostvars[host]['ansible_host'].split('.')[-1] %}
+{{ last_octet }}  IN  PTR  {{ hostvars[host]['inventory_hostname'] | replace('_','-') }}.{{ bind9_domain }}.
+{% endif %}
+{% endfor %}

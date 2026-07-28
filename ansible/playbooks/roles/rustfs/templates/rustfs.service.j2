@@ -1,0 +1,36 @@
+[Unit]
+Description=RustFS S3-compatible Object Storage
+Documentation=https://docs.rustfs.com
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{ rustfs_user }}
+Group={{ rustfs_group }}
+EnvironmentFile={{ rustfs_env_file_path }}
+
+ExecStart={{ rustfs_install_dir }}/{{ rustfs_binary_name }} server \
+  --address $RUSTFS_ADDRESS \
+  --console-address $RUSTFS_CONSOLE_ADDRESS \
+  $RUSTFS_VOLUMES
+
+ExecReload=/bin/kill -HUP $MAINPID
+
+# Sécurité
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+NoNewPrivileges=true
+
+# Redémarrage automatique
+Restart=on-failure
+RestartSec=10s
+
+# Logs
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=rustfs
+
+[Install]
+WantedBy=multi-user.target

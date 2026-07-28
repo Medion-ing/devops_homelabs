@@ -1,0 +1,12 @@
+---
+- name: Include tasks for BIND9 installation and configuration
+  ansible.builtin.import_tasks:
+    file: install.yml
+
+- name: Include tasks for BIND9 configuration
+  ansible.builtin.import_tasks:
+    file: configure.yml
+
+- name: Include tasks for BIND9 zone files
+  ansible.builtin.import_tasks:
+    file: zones.yml

@@ -1,0 +1,26 @@
+{% for user in ldap_users %}
+dn: uid={{ user.uid }},ou={{ ldap_ou_users }},{{ ldap_keycloak_config_ldap_base_dn }}
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: {{ user.uid }}
+cn: {{ user.cn }}
+sn: {{ user.sn }}
+mail: {{ user.mail }}
+userPassword: {{ user.password }}
+uidNumber: {{ loop.index + 1000 }}
+gidNumber: {{ loop.index + 1000 }}
+homeDirectory: /home/{{ user.uid }}
+loginShell: /sbin/nologin
+
+{% endfor %}
+
+{% for user in ldap_users %}
+{% for group in user.groups %}
+dn: cn={{ group }},ou={{ ldap_ou_groups }},{{ ldap_keycloak_config_ldap_base_dn }}
+changetype: modify
+add: member
+member: uid={{ user.uid }},ou={{ ldap_ou_users }},{{ ldap_keycloak_config_ldap_base_dn }}
+
+{% endfor %}
+{% endfor %}

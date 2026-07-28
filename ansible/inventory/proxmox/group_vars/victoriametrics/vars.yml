@@ -1,0 +1,12 @@
+---
+victoriametrics_version: "v1.143.0"
+victoriametrics_data_dir: "/data/victoriametrics"
+victoriametrics_retention_period_months: "1"
+victoriametrics_http_listen_addr: ":8428"
+
+victoriametrics_stream_aggr_enabled: true
+victoriametrics_stream_aggr_keep_input: false
+victoriametrics_stream_aggr_drop_input: false
+
+victoriametrics_extra_args:
+  vmui.customDashboardsPath: "{{ victoriametrics_vmui_custom_dashboards_path }}"

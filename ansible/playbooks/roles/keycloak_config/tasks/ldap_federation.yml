@@ -1,0 +1,122 @@
+---
+- name: "Rafraîchir le token admin"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_keycloak_url }}/realms/master/protocol/openid-connect/token"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      client_id: admin-cli
+      username: "{{ vault_keycloak_admin_user }}"
+      password: "{{ vault_keycloak_admin_password }}"
+      grant_type: password
+    status_code: 200
+  register: keycloak_config_keycloak_token
+  no_log: true
+
+- name: "Vérifier si la fédération LDAP existe"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_keycloak_url }}/admin/realms/{{ keycloak_config_keycloak_realm }}/components?type=org.keycloak.storage.UserStorageProvider"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ keycloak_config_keycloak_token.json.access_token }}"
+    status_code: 200
+  register: keycloak_config_ldap_federation_check
+
+- name: "Créer la fédération LDAP"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_keycloak_url }}/admin/realms/{{ keycloak_config_keycloak_realm }}/components"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ keycloak_config_keycloak_token.json.access_token }}"
+      Content-Type: application/json
+    body_format: json
+    body:
+      name: "{{ keycloak_config_ldap_federation_name }}"
+      providerId: "ldap"
+      providerType: "org.keycloak.storage.UserStorageProvider"
+      config:
+        enabled: ["true"]
+        priority: ["0"]
+        fullSyncPeriod: ["-1"]
+        changedSyncPeriod: ["-1"]
+        cachePolicy: ["DEFAULT"]
+        evictionDay: []
+        evictionHour: []
+        evictionMinute: []
+        maxLifespan: []
+        batchSizeForSync: ["1000"]
+        editMode: ["READ_ONLY"]
+        importEnabled: ["true"]
+        syncRegistrations: ["false"]
+        vendor: ["other"]
+        usernameLDAPAttribute: ["uid"]
+        rdnLDAPAttribute: ["uid"]
+        uuidLDAPAttribute: ["entryUUID"]
+        userObjectClasses: ["inetOrgPerson, posixAccount"]
+        connectionUrl: ["{{ keycloak_config_ldap_url }}"]
+        usersDn: ["{{ keycloak_config_ldap_users_dn }}"]
+        authType: ["simple"]
+        bindDn: ["{{ keycloak_config_ldap_bind_dn }}"]
+        bindCredential: ["{{ keycloak_config_ldap_bind_password }}"]
+        searchScope: ["1"]
+        validatePasswordPolicy: ["false"]
+        trustEmail: ["true"]
+        useTruststoreSpi: ["ldapsOnly"]
+        connectionPooling: ["true"]
+        pagination: ["true"]
+        allowKerberosAuthentication: ["false"]
+        debug: ["false"]
+        useKerberosForPasswordAuthentication: ["false"]
+    status_code: 201
+  register: keycloak_config_ldap_federation_result
+  when: keycloak_config_ldap_federation_check.json | selectattr('name', 'equalto', keycloak_config_ldap_federation_name) | list | length == 0
+
+- name: "Récupérer l'ID de la fédération LDAP"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_keycloak_url }}/admin/realms/{{ keycloak_config_keycloak_realm }}/components?type=org.keycloak.storage.UserStorageProvider"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ keycloak_config_keycloak_token.json.access_token }}"
+    status_code: 200
+  register: keycloak_config_ldap_federation_info
+
+- name: "Stocker l'ID de la fédération"
+  ansible.builtin.set_fact:
+    keycloak_config_ldap_federation_id: "{{ keycloak_config_ldap_federation_match_id }}"
+
+- name: "Ajouter le mapper de groupes LDAP"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_keycloak_url }}/admin/realms/{{ keycloak_config_keycloak_realm }}/components"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ keycloak_config_keycloak_token.json.access_token }}"
+      Content-Type: application/json
+    body_format: json
+    body:
+      name: "group-mapper"
+      providerId: "group-ldap-mapper"
+      providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+      parentId: "{{ keycloak_config_ldap_federation_id }}"
+      config:
+        mode: ["READ_ONLY"]
+        membership.attribute.type: ["DN"]
+        group.name.ldap.attribute: ["cn"]
+        membership.ldap.attribute: ["member"]
+        preserve.group.inheritance: ["true"]
+        ignore.missing.groups: ["false"]
+        membership.user.ldap.attribute: ["uid"]
+        groups.dn: ["{{ keycloak_config_ldap_groups_dn }}"]
+        group.object.classes: ["groupOfNames"]
+        groups.path: ["/"]
+        drop.non.existing.groups.during.sync: ["false"]
+        mapped.group.attributes: ["description"]
+    status_code: [201, 409]
+
+- name: "Déclencher la synchronisation LDAP → Keycloak"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_admin_realms_path }}/user-storage/{{ keycloak_config_ldap_federation_id }}/sync?action=triggerFullSync"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ keycloak_config_keycloak_token.json.access_token }}"
+    status_code: 200
+  register: keycloak_config_ldap_sync

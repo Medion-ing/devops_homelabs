@@ -1,0 +1,6 @@
+---
+- name: Restart keycloak
+  ansible.builtin.systemd:
+    name: "{{ keycloak_service_name }}"
+    state: restarted
+    daemon_reload: true

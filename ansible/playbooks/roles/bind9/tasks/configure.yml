@@ -1,0 +1,36 @@
+---
+- name: Deploy named.conf.options
+  ansible.builtin.template:
+    src: named.conf.options.j2
+    dest: /etc/bind/named.conf.options
+    owner: bind
+    group: bind
+    mode: '0644'
+    validate: "named-checkconf %s"
+  notify: Restart bind9
+
+- name: Deploy named.conf.local
+  ansible.builtin.template:
+    src: named.conf.local.j2
+    dest: /etc/bind/named.conf.local
+    owner: bind
+    group: bind
+    mode: '0644'
+    validate: "named-checkconf %s"
+  notify: Restart bind9
+
+- name: Configure systemd-resolved to use local Bind9
+  ansible.builtin.file:
+    path: /etc/systemd/resolved.conf.d
+    state: directory
+    mode: '0755'
+
+- name: Deploy resolved config for homelab.local
+  ansible.builtin.copy:
+    dest: /etc/systemd/resolved.conf.d/homelab.conf
+    content: |
+      [Resolve]
+      DNS=192.168.1.16
+      Domains=homelab.local
+    mode: '0644'
+  notify: Restart systemd-resolved

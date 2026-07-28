@@ -1,0 +1,9 @@
+# OU Users
+dn: ou={{ ldap_ou_users }},{{ ldap_keycloak_config_ldap_base_dn }}
+objectClass: organizationalUnit
+ou: {{ ldap_ou_users }}
+
+# OU Groups
+dn: ou={{ ldap_ou_groups }},{{ ldap_keycloak_config_ldap_base_dn }}
+objectClass: organizationalUnit
+ou: {{ ldap_ou_groups }}

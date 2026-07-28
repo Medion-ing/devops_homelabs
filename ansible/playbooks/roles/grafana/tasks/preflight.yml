@@ -1,0 +1,8 @@
+---
+- name: "Preflight checks"
+  ansible.builtin.assert:
+    that:
+      - grafana_ini_default is defined
+      - grafana_ini_default.paths.data is defined
+      - grafana_ini_default.paths.logs is defined
+    fail_msg: "Grafana variables are incomplete"

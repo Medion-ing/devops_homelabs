@@ -1,0 +1,60 @@
+---
+- name: "Installer les dépendances debconf + OpenLDAP"
+  ansible.builtin.package:
+    name:
+      - debconf-utils
+      - slapd
+      - ldap-utils
+      - python3-ldap3
+    state: present
+
+- name: "Préconfigurer slapd via debconf (domaine + org)"
+  ansible.builtin.debconf:
+    name: slapd
+    question: "{{ item.question }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.vtype }}"
+  loop:
+    - question: slapd/domain
+      value: "{{ ldap_domain }}"
+      vtype: string
+    - question: shared/organization
+      value: "{{ ldap_org }}"
+      vtype: string
+    - question: slapd/password1
+      value: "{{ ldap_admin_password }}"
+      vtype: password
+    - question: slapd/password2
+      value: "{{ ldap_admin_password }}"
+      vtype: password
+    - question: slapd/backend
+      value: MDB
+      vtype: select
+    - question: slapd/purge_database
+      value: "true"
+      vtype: boolean
+    - question: slapd/move_old_database
+      value: "true"
+      vtype: boolean
+
+- name: "Reconfigurer slapd avec debconf"
+  ansible.builtin.command:
+    cmd: dpkg-reconfigure -f noninteractive slapd
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+  register: ldap_slapd_reconfig
+  changed_when: true
+  notify: Restart slapd
+
+- name: "S'assurer que slapd est démarré"
+  ansible.builtin.systemd:
+    name: "{{ ldap_service_name }}"
+    state: started
+    enabled: true
+
+- name: "Vérifier que slapd écoute sur le port {{ ldap_port }}"
+  ansible.builtin.wait_for:
+    host: "127.0.0.1"
+    port: "{{ ldap_port }}"
+    timeout: 30
+    state: started

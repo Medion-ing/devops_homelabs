@@ -1,0 +1,92 @@
+---
+- name: "Créer le groupe système"
+  ansible.builtin.group:
+    name: "{{ rustfs_group }}"
+    system: true
+    state: present
+
+- name: "Créer l'utilisateur système (sans shell)"
+  ansible.builtin.user:
+    name: "{{ rustfs_user }}"
+    group: "{{ rustfs_group }}"
+    shell: /sbin/nologin
+    create_home: false
+    system: true
+    state: present
+
+- name: "Installer les dépendances système"
+  ansible.builtin.package:
+    name:
+      - unzip
+      - curl
+    state: present
+
+- name: "Créer le répertoire temporaire"
+  ansible.builtin.file:
+    path: "{{ rustfs_tmp_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: "Créer les répertoires de données"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ rustfs_user }}"
+    group: "{{ rustfs_group }}"
+    mode: "0750"
+  loop: "{{ rustfs_data_dirs }}"
+
+- name: "Créer le répertoire de logs"
+  ansible.builtin.file:
+    path: "{{ rustfs_log_dir }}"
+    state: directory
+    owner: "{{ rustfs_user }}"
+    group: "{{ rustfs_group }}"
+    mode: "0750"
+
+- name: "Créer le répertoire TLS"
+  ansible.builtin.file:
+    path: "{{ rustfs_tls_dir }}"
+    state: directory
+    owner: "{{ rustfs_user }}"
+    group: "{{ rustfs_group }}"
+    mode: "0750"
+
+- name: "Télécharger l'archive depuis GitHub"
+  ansible.builtin.get_url:
+    url: "{{ rustfs_download_url }}"
+    dest: "{{ rustfs_tmp_dir }}/{{ rustfs_archive_name }}"
+    mode: "0644"
+    timeout: 120
+
+- name: "Extraire l'archive"
+  ansible.builtin.unarchive:
+    src: "{{ rustfs_tmp_dir }}/{{ rustfs_archive_name }}"
+    dest: "{{ rustfs_tmp_dir }}"
+    remote_src: true
+
+
+- name: "Installer le binaire dans {{ rustfs_install_dir }}"
+  ansible.builtin.copy:
+    src: "{{ rustfs_tmp_dir }}/{{ rustfs_binary_name }}"
+    dest: "{{ rustfs_install_dir }}/{{ rustfs_binary_name }}"
+    owner: root
+    group: root
+    mode: "0755"
+    remote_src: true
+
+- name: "Vérifier la version installée"
+  ansible.builtin.command:
+    cmd: "{{ rustfs_install_dir }}/{{ rustfs_binary_name }} --version"
+  register: rustfs_version_check
+  changed_when: false
+  failed_when: false
+
+- name: "Afficher la version installée"
+  ansible.builtin.debug:
+    msg: "RustFS version : {{ rustfs_version_check.stdout | default('inconnue') }}"
+
+- name: "Nettoyer le répertoire temporaire"
+  ansible.builtin.file:
+    path: "{{ rustfs_tmp_dir }}"
+    state: absent

@@ -1,0 +1,12 @@
+---
+- name: Install PostgreSQL for Keycloak
+  ansible.builtin.import_tasks: install_postgres.yml
+  tags: [keycloak, keycloak_postgres]
+
+- name: Install Keycloak
+  ansible.builtin.import_tasks: install_keycloak.yml
+  tags: [keycloak, keycloak_install]
+
+- name: Configure and start Keycloak
+  ansible.builtin.import_tasks: configure_keycloak.yml
+  tags: [keycloak, keycloak_configure]

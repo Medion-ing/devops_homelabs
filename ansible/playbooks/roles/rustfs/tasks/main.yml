@@ -1,0 +1,12 @@
+---
+- name: Install RustFS single-Node
+  ansible.builtin.import_tasks: install.yml
+  tags: [rustfs, rustfs_install]
+
+- name: Configure RustFS single-Node
+  ansible.builtin.import_tasks: configure.yml
+  tags: [rustfs, rustfs_configure]
+
+- name: Installer et configurer mc (client S3)
+  ansible.builtin.import_tasks: mc.yml
+  tags: [rustfs, rustfs_mc]

@@ -1,0 +1,24 @@
+[paths]
+logs = {{ grafana_ini.paths.logs }}
+data = {{ grafana_ini.paths.data }}
+plugins = {{ grafana_ini.paths.data }}/plugins
+
+[server]
+protocol = {{ grafana_ini.server.protocol | default('http') }}
+http_addr = {{ grafana_ini.server.http_addr | default('0.0.0.0') }}
+http_port = {{ grafana_ini.server.http_port | default(3000) }}
+domain = {{ grafana_ini.server.domain | default('localhost') }}
+enable_gzip = {{ grafana_ini.server.enable_gzip | default(false) | ternary('true', 'false') }}
+router_logging = {{ grafana_ini.server.router_logging | default(false) | ternary('true', 'false') }}
+
+[security]
+admin_user = {{ grafana_ini.security.admin_user | default('admin') }}
+admin_password = {{ grafana_ini.security.admin_password }}
+
+[database]
+type = {{ grafana_ini.database.type | default('sqlite3') }}
+
+[users]
+allow_sign_up = {{ grafana_ini.users.allow_sign_up | default(false) | ternary('true', 'false') }}
+auto_assign_org_role = {{ grafana_ini.users.auto_assign_org_role | default('Viewer') }}
+default_theme = {{ grafana_ini.users.default_theme | default('dark') }}

@@ -1,0 +1,27 @@
+prometheus_site: "proxmox"
+prometheus_retention_time: "15d"
+prometheus_scrape_interval: "15s"
+
+prometheus_node_targets:
+  - target: "192.168.1.102:9100"
+    host: "devops-test"
+    product: "proxmox"
+    role: "vm"
+
+  - target: "192.168.1.85:9100"
+    host: "devsecops"
+    product: "proxmox"
+    role: "vm"
+
+prometheus_pve_targets: []
+
+prometheus_remote_write_enabled: true
+prometheus_remote_write_url: "http://192.168.1.85:8428/api/v1/write"
+prometheus_external_labels:
+  site: proxmox
+  environment: homelab
+
+prometheus_remote_write_write_relabel_configs:
+  - source_labels: ["__name__"]
+    regex: "^(prometheus_remote_storage_samples_total)$"
+    action: keep

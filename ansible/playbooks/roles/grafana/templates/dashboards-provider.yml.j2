@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: "ansible"
+    orgId: 1
+    folder: ""
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: "{{ grafana_ini.paths.data }}/dashboards"
+      foldersFromFilesStructure: {{ grafana_provisioning_dashboards_from_file_structure | default(false) | ternary('true', 'false') }}

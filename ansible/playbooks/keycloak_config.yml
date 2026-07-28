@@ -1,0 +1,6 @@
+---
+- name: "Configurer Keycloak pour RustFS (realm, client, LDAP, mappers)"
+  hosts: rustfs
+  become: false
+  roles:
+    - keycloak_config

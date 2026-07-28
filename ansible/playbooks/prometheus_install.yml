@@ -1,0 +1,7 @@
+---
+- name: Install Prometheus stack
+  hosts: prometheus
+  become: true
+  roles:
+    - node_exporter
+    - prometheus

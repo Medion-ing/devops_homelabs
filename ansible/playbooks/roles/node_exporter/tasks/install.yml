@@ -1,0 +1,36 @@
+---
+- name: Create node_exporter group
+  ansible.builtin.group:
+    name: "{{ node_exporter_group }}"
+    system: true
+
+- name: Create node_exporter user
+  ansible.builtin.user:
+    name: "{{ node_exporter_user }}"
+    group: "{{ node_exporter_group }}"
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Download Node Exporter archive
+  ansible.builtin.get_url:
+    url: "{{ node_exporter_download_url }}"
+    dest: "/tmp/{{ node_exporter_archive_name }}"
+    mode: "0644"
+
+- name: Extract Node Exporter archive
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ node_exporter_archive_name }}"
+    dest: /tmp
+    remote_src: true
+    creates: "/tmp/{{ node_exporter_extracted_dir }}"
+
+- name: Install node_exporter binary
+  ansible.builtin.copy:
+    src: "/tmp/{{ node_exporter_extracted_dir }}/{{ node_exporter_binary_name }}"
+    dest: "{{ node_exporter_install_dir }}/{{ node_exporter_binary_name }}"
+    remote_src: true
+    owner: root
+    group: root
+    mode: "0755"
+  notify: Restart Node Exporter service
