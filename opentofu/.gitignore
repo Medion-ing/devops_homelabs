@@ -1,48 +1,17 @@
-# OpenTofu / Terraform working directory
+# OpenTofu state
+**/*.tfstate
+**/*.tfstate.*
+
+# Variables sensibles
+**/*.tfvars
+**/*.tfvars.json
+
+# Cache providers
 **/.terraform/
-.terraform/
 
-# Provider plugins
-**/.terraform/providers/
-
-# State files
-*.tfstate
-*.tfstate.*
-*.tfstate.backup
-
-# Crash logs
-crash.log
-crash.*.log
-
-# Variables avec secrets
-*.tfvars
-*.tfvars.json
-*.auto.tfvars
-*.auto.tfvars.json
-
-# Fichiers de variables locaux
-*.local.tfvars
-
-# Override files
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
-
-# Plan files
-*.tfplan
-*.plan
-
-# Lockfile
-# .terraform.lock.hcl
-
-# Logs OpenTofu
+# Logs
 *.log
 
 # IDE
 .vscode/
 .idea/
-
-# OS
-.DS_Store
-Thumbs.db
