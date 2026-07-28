@@ -1,0 +1,127 @@
+#################################################
+# OS / Editors
+#################################################
+
+.DS_Store
+Thumbs.db
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+
+#################################################
+# Secrets / Credentials (GLOBAL)
+#################################################
+
+.env
+.env.*
+*.secret
+*.key
+*.pem
+
+# Ansible Vault
+**/vault.yml
+**/vault.yaml
+
+# Variables sensibles
+**/*secret*
+**/*password*
+**/*passwd*
+
+
+#################################################
+# Ansible
+#################################################
+
+# Ansible retry files
+*.retry
+
+# Ansible cache
+.ansible/
+
+# Molecule
+.molecule/
+
+
+#################################################
+# OpenTofu / Terraform
+#################################################
+
+# Provider cache
+**/.terraform/
+
+# State files (NEVER commit)
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfstate.backup
+
+# Variables contenant des secrets
+**/*.tfvars
+**/*.tfvars.json
+**/*.auto.tfvars
+**/*.auto.tfvars.json
+
+# Plans
+**/*.tfplan
+**/*.plan
+
+# Logs
+crash.log
+crash.*.log
+*.log
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+
+#################################################
+# Docker
+#################################################
+
+# Docker env
+docker/**/.env
+docker/**/env
+
+# Volumes persistants
+docker/**/data/
+docker/**/volumes/
+
+# Logs
+docker/**/logs/
+
+
+#################################################
+# Kubernetes
+#################################################
+
+# Secrets Kubernetes
+kubernetes/**/secret.yaml
+kubernetes/**/secrets.yaml
+
+# Helm cache
+kubernetes/**/.helm/
+
+# Helm generated files
+**/charts/**/charts/
+
+#################################################
+# Python
+#################################################
+
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+#################################################
+# Backup
+#################################################
+
+*.bak
+*.backup
+*.old
+*~
