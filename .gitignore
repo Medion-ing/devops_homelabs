@@ -21,10 +21,6 @@ Thumbs.db
 *.key
 *.pem
 
-# Ansible Vault
-**/vault.yml
-**/vault.yaml
-
 # Variables sensibles
 **/*secret*
 **/*password*
