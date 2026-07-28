@@ -1,0 +1,33 @@
+[Unit]
+Description=Keycloak Identity Provider
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=idle
+User={{ keycloak_user }}
+Group={{ keycloak_group }}
+
+Environment=JAVA_HOME={{ keycloak_java_home }}
+Environment=KC_BOOTSTRAP_ADMIN_USERNAME={{ vault_keycloak_admin_user }}
+Environment=KC_BOOTSTRAP_ADMIN_PASSWORD={{ vault_keycloak_admin_password }}
+
+ExecStart={{ keycloak_install_dir }}/bin/kc.sh start-dev \
+  --db=postgres \
+  --db-url=jdbc:postgresql://{{ keycloak_db_host }}:{{ keycloak_db_port }}/{{ keycloak_db_name }} \
+  --db-username={{ vault_keycloak_db_user }} \
+  --db-password={{ vault_keycloak_db_password }} \
+  --http-port={{ keycloak_http_port }} \
+  --hostname={{ keycloak_hostname }} \
+  --hostname-strict=false
+
+Restart=on-failure
+RestartSec=15s
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=keycloak
+
+[Install]
+WantedBy=multi-user.target

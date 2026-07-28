@@ -1,0 +1,58 @@
+---
+- name: "Installer Java 21 (requis par Keycloak 26.x)"
+  ansible.builtin.package:
+    name: openjdk-21-jdk-headless
+    state: present
+
+- name: "Créer le groupe système keycloak"
+  ansible.builtin.group:
+    name: "{{ keycloak_group }}"
+    system: true
+    state: present
+
+- name: "Créer l'utilisateur système keycloak"
+  ansible.builtin.user:
+    name: "{{ keycloak_user }}"
+    group: "{{ keycloak_group }}"
+    shell: /sbin/nologin
+    home: /opt/keycloak
+    create_home: false
+    system: true
+    state: present
+
+- name: "Créer le répertoire temporaire"
+  ansible.builtin.file:
+    path: "{{ keycloak_tmp_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: "Télécharger l'archive Keycloak {{ keycloak_version }}"
+  ansible.builtin.get_url:
+    url: "{{ keycloak_download_url }}"
+    dest: "{{ keycloak_tmp_dir }}/{{ keycloak_archive }}"
+    mode: "0644"
+    timeout: 120
+
+- name: "Extraire l'archive"
+  ansible.builtin.unarchive:
+    src: "{{ keycloak_tmp_dir }}/{{ keycloak_archive }}"
+    dest: /opt/
+    remote_src: true
+    creates: "{{ keycloak_install_dir }}"
+
+- name: "Renommer le répertoire extrait"
+  ansible.builtin.command:
+    cmd: "mv /opt/keycloak-{{ keycloak_version }} {{ keycloak_install_dir }}"
+    creates: "{{ keycloak_install_dir }}"
+
+- name: "Appliquer les permissions"
+  ansible.builtin.file:
+    path: "{{ keycloak_install_dir }}"
+    owner: "{{ keycloak_user }}"
+    group: "{{ keycloak_group }}"
+    recurse: true
+
+- name: "Nettoyer le répertoire temporaire"
+  ansible.builtin.file:
+    path: "{{ keycloak_tmp_dir }}"
+    state: absent

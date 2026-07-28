@@ -1,0 +1,6 @@
+---
+opentofu_version: "1.12.1"
+opentofu_install_dir: /usr/local/bin
+opentofu_archive_name: "tofu_{{ opentofu_version }}_linux_amd64.tar.gz"
+opentofu_download_url: "https://github.com/opentofu/opentofu/releases/download/v{{ opentofu_version }}/{{ opentofu_archive_name }}"
+opentofu_tmp_dir: /tmp/opentofu_install

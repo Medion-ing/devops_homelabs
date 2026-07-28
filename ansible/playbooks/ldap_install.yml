@@ -1,0 +1,6 @@
+---
+- name: Déployer OpenLDAP
+  hosts: ldap
+  become: true
+  roles:
+    - ldap

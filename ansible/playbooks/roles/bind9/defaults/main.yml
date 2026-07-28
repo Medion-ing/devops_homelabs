@@ -1,0 +1,10 @@
+bind9_domain: "homelab.local"
+bind9_network: "192.168.1"        # les 3 premiers octets de mon réseau
+bind9_dns_server_ip: "192.168.1.16"  # IP fixe de ma VM DNS
+bind9_forwarders:
+  - "1.1.1.1"
+  - "8.8.8.8"
+bind9_allow_recursion:
+  - "192.168.0.0/16"
+  - "127.0.0.1"
+bind9_zone_serial: "{{ ansible_facts['date_time']['date'] | replace('-', '') }}01"

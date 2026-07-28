@@ -1,0 +1,21 @@
+options {
+    directory "/var/cache/bind";
+
+    recursion yes;
+    allow-recursion {
+{% for net in bind9_allow_recursion %}
+        {{ net }};
+{% endfor %}
+    };
+
+    forwarders {
+{% for fw in bind9_forwarders %}
+        {{ fw }};
+{% endfor %}
+    };
+    forward only;
+
+    dnssec-validation auto;
+    listen-on { any; };
+    listen-on-v6 { none; };
+};

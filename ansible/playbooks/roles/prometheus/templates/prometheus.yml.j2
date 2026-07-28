@@ -1,0 +1,64 @@
+global:
+  scrape_interval: {{ prometheus_scrape_interval | default('15s') }}
+  evaluation_interval: 15s
+  external_labels:
+    site: "{{ prometheus_site | default('default') }}"
+    prometheus: "{{ inventory_hostname }}"
+{% if prometheus_environment is defined %}
+    environment: "{{ prometheus_environment }}"
+{% endif %}
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets:
+          - "localhost{{ prometheus_web_listen_address | default(':9090') }}"
+
+  - job_name: "node_exporter"
+    static_configs:
+{% for item in prometheus_node_targets | default([{'target': 'localhost:9100', 'host': inventory_hostname, 'product': 'default', 'role': 'vm'}]) %}
+      - targets:
+          - "{{ item.target }}"
+        labels:
+          product: "{{ item.product | default('default') }}"
+          host: "{{ item.host | default(item.target) }}"
+          role: "{{ item.role | default('vm') }}"
+{% endfor %}
+    relabel_configs:
+      - source_labels: [host]
+        target_label: instance
+      - source_labels: [__address__]
+        target_label: target
+
+{% if prometheus_pve_targets is defined and prometheus_pve_targets | length > 0 %}
+  - job_name: "pve_exporter"
+    metrics_path: /pve
+    params:
+      module:
+        - default
+    static_configs:
+{% for item in prometheus_pve_targets %}
+      - targets:
+          - "{{ item.target }}"
+        labels:
+          product: "{{ item.product | default('default') }}"
+          host: "{{ item.host | default(item.target) }}"
+          role: "{{ item.role | default('hypervisor') }}"
+{% endfor %}
+    relabel_configs:
+      - source_labels: [host]
+        target_label: instance
+      - source_labels: [__address__]
+        target_label: target
+{% endif %}
+
+{% if prometheus_remote_write_enabled | default(false) | bool %}
+remote_write:
+  - url: "{{ prometheus_remote_write_url }}"
+{% if prometheus_remote_write_keep_metrics is defined and prometheus_remote_write_keep_metrics | length > 0 %}
+    write_relabel_configs:
+      - source_labels: [__name__]
+        regex: '^(?:{{ prometheus_remote_write_keep_metrics | join("|") }})$'
+        action: keep
+{% endif %}
+{% endif %}

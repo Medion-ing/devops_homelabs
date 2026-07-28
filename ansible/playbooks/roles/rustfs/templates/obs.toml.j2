@@ -1,0 +1,35 @@
+[observability]
+endpoint        = "{{ rustfs_obs_endpoint }}"
+use_stdout      = false
+sample_ratio    = {{ rustfs_obs_sample_ratio }}
+meter_interval  = {{ rustfs_obs_meter_interval }}
+service_name    = "{{ rustfs_obs_service_name }}"
+service_version = "1.0.0"
+environments    = "homelab"
+logger_level    = "{{ rustfs_obs_log_level }}"
+local_logging_enabled = {{ rustfs_obs_log_local | lower }}
+
+[sinks]
+
+[sinks.kafka]
+enabled = false
+bootstrap_servers = "localhost:9092"
+topic             = "logs"
+batch_size        = 100
+batch_timeout_ms  = 1000
+
+[sinks.webhook]
+enabled        = false
+endpoint       = "http://localhost:8080/webhook"
+auth_token     = ""
+batch_size     = 100
+batch_timeout_ms = 1000
+
+[sinks.file]
+enabled          = {{ rustfs_obs_log_local | lower }}
+path             = "{{ rustfs_obs_log_path }}"
+batch_size       = 10
+batch_timeout_ms = 1000
+
+[logger]
+queue_capacity = 10

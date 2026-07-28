@@ -1,0 +1,7 @@
+node_exporter_user: "node_exporter"
+node_exporter_group: "node_exporter"
+node_exporter_service_name: "node_exporter"
+node_exporter_binary_name: "node_exporter"
+node_exporter_archive_name: "node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+node_exporter_extracted_dir: "node_exporter-{{ node_exporter_version }}.linux-amd64"
+node_exporter_download_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"

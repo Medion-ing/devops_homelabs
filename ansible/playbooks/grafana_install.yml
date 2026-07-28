@@ -1,0 +1,8 @@
+---
+# ansible-playbook -i inventory/proxmox/hosts.yml playbooks/grafana_install.yml --diff -K
+
+- name: Installer Grafana
+  hosts: grafana
+  become: true
+  roles:
+    - grafana

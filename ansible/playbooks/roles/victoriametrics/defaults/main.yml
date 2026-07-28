@@ -1,0 +1,156 @@
+---
+victoriametrics_single_enabled: true
+
+victoriametrics_version: "v1.143.0"
+victoriametrics_http_port: 8428
+
+victoriametrics_repo_url: "https://github.com/VictoriaMetrics/VictoriaMetrics"
+victoriametrics_platform: "{% if victoriametrics_version.replace('v', '') is version('1.79.0', '>=') %}-linux{% endif %}"
+
+victoriametrics_release_path: "{{ victoriametrics_repo_url }}/releases/download/{{ victoriametrics_version }}"
+victoriametrics_binary_name_path: "victoria-metrics{{ victoriametrics_platform }}-{{ victoriametrics_go_arch }}-{{ victoriametrics_version }}.tar.gz"
+
+victoriametrics_download_url: "{{ victoriametrics_release_path }}/{{ victoriametrics_binary_name_path }}"
+victoriametrics_system_user: "victoriametrics"
+victoriametrics_system_group: "{{ victoriametrics_system_user }}"
+
+victoriametrics_install_dir: "/usr/local/bin"
+victoriametrics_binary_name: "victoria-metrics"
+victoriametrics_tmp_dir: "/tmp/victoriametrics-single"
+
+victoriametrics_data_dir: "/data/victoriametrics"
+victoriametrics_config_dir: "/etc/victoriametrics"
+
+victoriametrics_self_scrape_interval: "30s"
+victoriametrics_retention_period_months: "1"
+victoriametrics_search_max_unique_timeseries: "900000"
+victoriametrics_http_listen_addr: ":8428"
+
+victoriametrics_service_name: "victoriametrics-single"
+victoriametrics_max_open_files: 2097152
+
+victoriametrics_service_envflag_enabled: false
+victoriametrics_service_envflag_data: []
+victoriametrics_service_envflag_file: "/etc/default/victoriametrics-single"
+
+victoriametrics_vmui_custom_dashboards_enabled: true
+victoriametrics_vmui_custom_dashboards_path: "{{ victoriametrics_config_dir }}/dashboards"
+
+victoriametrics_stream_aggr_enabled: true
+victoriametrics_stream_aggr_config_file: "{{ victoriametrics_config_dir }}/stream-aggr.yaml"
+victoriametrics_stream_aggr_keep_input: false
+victoriametrics_stream_aggr_drop_input: false
+victoriametrics_stream_aggr_ignore_old_samples: true
+victoriametrics_stream_aggr_ignore_first_intervals: 1
+
+victoriametrics_base_args:
+  storageDataPath: "{{ victoriametrics_data_dir }}"
+  selfScrapeInterval: "{{ victoriametrics_self_scrape_interval }}"
+  retentionPeriod: "{{ victoriametrics_retention_period_months }}"
+  httpListenAddr: "{{ victoriametrics_http_listen_addr }}"
+  maxConcurrentInserts: 32
+  "search.maxUniqueTimeseries": "{{ victoriametrics_search_max_unique_timeseries }}"
+
+victoriametrics_extra_args:
+  vmui.customDashboardsPath: "{{ victoriametrics_vmui_custom_dashboards_path }}"
+
+victoriametrics_stream_aggr_rules:
+  - name: prometheus_remote_write_samples_total
+    match:
+      - 'prometheus_remote_storage_samples_total'
+    interval: 5m
+    by: ["site", "instance", "job", "remote_name", "url"]
+    outputs: ["rate_sum"]
+
+  - name: prometheus_remote_write_failed_total
+    match:
+      - 'prometheus_remote_storage_samples_failed_total'
+    interval: 5m
+    by: ["site", "instance", "job", "remote_name", "url"]
+    outputs: ["rate_sum"]
+
+  - name: prometheus_remote_write_pending
+    match:
+      - 'prometheus_remote_storage_samples_pending'
+    interval: 5m
+    by: ["site", "instance", "job", "remote_name", "url"]
+    outputs: ["last", "max"]
+
+  - name: prometheus_remote_write_enqueue_retries
+    match:
+      - 'prometheus_remote_storage_enqueue_retries_total'
+    interval: 5m
+    by: ["site", "instance", "job", "remote_name", "url"]
+    outputs: ["rate_sum"]
+
+  - name: prometheus_remote_write_samples_retried
+    match:
+      - 'prometheus_remote_storage_samples_retried_total'
+    interval: 5m
+    by: ["site", "instance", "job", "remote_name", "url"]
+    outputs: ["rate_sum"]
+
+  - name: node_cpu_usage
+    match:
+      - 'node_cpu_seconds_total'
+    interval: 5m
+    by: ["site", "instance", "mode"]
+    outputs: ["rate_sum"]
+
+  - name: node_load
+    match:
+      - 'node_load1'
+      - 'node_load5'
+      - 'node_load15'
+    interval: 5m
+    by: ["site", "instance"]
+    outputs: ["last", "max"]
+
+  - name: node_memory_available
+    match:
+      - 'node_memory_MemAvailable_bytes'
+    interval: 5m
+    by: ["site", "instance"]
+    outputs: ["last", "min"]
+
+  - name: node_memory_total
+    match:
+      - 'node_memory_MemTotal_bytes'
+    interval: 5m
+    by: ["site", "instance"]
+    outputs: ["last"]
+
+  - name: node_filesystem_available
+    match:
+      - 'node_filesystem_avail_bytes'
+    interval: 5m
+    by: ["site", "instance", "mountpoint"]
+    outputs: ["last", "min"]
+
+  - name: node_filesystem_size
+    match:
+      - 'node_filesystem_size_bytes'
+    interval: 5m
+    by: ["site", "instance", "mountpoint"]
+    outputs: ["last"]
+
+  - name: node_network_receive
+    match:
+      - 'node_network_receive_bytes_total'
+    interval: 5m
+    by: ["site", "instance", "device"]
+    outputs: ["rate_sum"]
+
+  - name: node_network_transmit
+    match:
+      - 'node_network_transmit_bytes_total'
+    interval: 5m
+    by: ["site", "instance", "device"]
+    outputs: ["rate_sum"]
+
+  - name: probe_availability
+    match:
+      - 'probe_success'
+    interval: 5m
+    by: ["site", "instance", "job"]
+    outputs: ["last", "min"]

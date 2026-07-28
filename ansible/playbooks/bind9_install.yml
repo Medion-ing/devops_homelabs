@@ -1,0 +1,6 @@
+---
+- name: Install and configure Bind9 DNS server
+  hosts: dns
+  become: true
+  roles:
+    - role: bind9

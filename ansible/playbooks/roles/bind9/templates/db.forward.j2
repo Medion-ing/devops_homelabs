@@ -1,0 +1,18 @@
+$TTL 3600
+@   IN  SOA ns1.{{ bind9_domain }}. admin.{{ bind9_domain }}. (
+            {{ bind9_zone_serial }} ; Serial
+            3600                   ; Refresh
+            900                    ; Retry
+            604800                 ; Expire
+            300 )                  ; Negative TTL
+
+    IN  NS  ns1.{{ bind9_domain }}.
+
+ns1 IN  A   {{ bind9_dns_server_ip }}
+
+; ── Services fixes ──────────────────────────────────
+{% for host in groups['all'] %}
+{% if hostvars[host]['ansible_host'] is defined %}
+{{ hostvars[host]['inventory_hostname'] | replace('_','-') }}  IN  A   {{ hostvars[host]['ansible_host'] }}
+{% endif %}
+{% endfor %}

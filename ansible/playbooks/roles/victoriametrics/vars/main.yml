@@ -1,0 +1,11 @@
+---
+victoriametrics_go_arch_map:
+  i386: "386"
+  x86_64: "amd64"
+  aarch64: "arm64"
+  armv7l: "arm"
+  armv6l: "arm6vl"
+  ppc64le: "ppc64le"
+  s390x: "s390x"
+
+victoriametrics_go_arch: "{{ victoriametrics_go_arch_map[ansible_facts['architecture']] | default(ansible_facts['architecture']) }}"

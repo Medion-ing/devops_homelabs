@@ -1,0 +1,16 @@
+---
+- name: "Configurer le realm RustFS"
+  ansible.builtin.import_tasks: realm.yml
+  tags: [keycloak_config, keycloak_config_keycloak_realm]
+
+- name: "Configurer le client OIDC"
+  ansible.builtin.import_tasks: client.yml
+  tags: [keycloak_config, keycloak_client]
+
+- name: "Configurer la fédération LDAP"
+  ansible.builtin.import_tasks: ldap_federation.yml
+  tags: [keycloak_config, keycloak_ldap]
+
+- name: "Configurer les mappers de groupes"
+  ansible.builtin.import_tasks: mappers.yml
+  tags: [keycloak_config, keycloak_mappers]

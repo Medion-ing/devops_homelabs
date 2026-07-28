@@ -1,0 +1,8 @@
+{% for group in ldap_groups %}
+dn: cn={{ group.name }},ou={{ ldap_ou_groups }},{{ ldap_keycloak_config_ldap_base_dn }}
+objectClass: groupOfNames
+cn: {{ group.name }}
+description: {{ group.description }}
+member: cn={{ ldap_admin_cn }},{{ ldap_keycloak_config_ldap_base_dn }}
+
+{% endfor %}

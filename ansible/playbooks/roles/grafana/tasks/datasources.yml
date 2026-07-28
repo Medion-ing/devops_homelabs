@@ -1,0 +1,10 @@
+---
+- name: "Create Grafana datasource provisioning file"
+  ansible.builtin.template:
+    src: "datasources.yml.j2"
+    dest: "/etc/grafana/provisioning/datasources/ansible-datasources.yml"
+    owner: "root"
+    group: "grafana"
+    mode: "0640"
+  become: true
+  notify: restart_grafana

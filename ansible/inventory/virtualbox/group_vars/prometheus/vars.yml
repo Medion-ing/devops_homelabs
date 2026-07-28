@@ -1,0 +1,25 @@
+prometheus_site: "virtualbox"
+prometheus_retention_time: "7d"
+prometheus_scrape_interval: "15s"
+
+prometheus_node_targets:
+  - target: "192.168.1.55:9100"
+    host: "kali"
+    product: "virtualbox"
+    role: "vm prometheus"
+
+  - target: "192.168.1.103:9100"
+    host: "centos"
+    product: "virtualbox"
+    role: "vm"
+
+prometheus_remote_write_enabled: true
+prometheus_remote_write_url: "http://192.168.1.85:8428/api/v1/write"
+prometheus_external_labels:
+  site: virtualbox
+  environment: homelab
+
+prometheus_remote_write_write_relabel_configs:
+  - source_labels: ["__name__"]
+    regex: "^(prometheus_remote_storage_samples_total)$"
+    action: keep

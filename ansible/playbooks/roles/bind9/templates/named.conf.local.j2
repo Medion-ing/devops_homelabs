@@ -1,0 +1,11 @@
+zone "{{ bind9_domain }}" {
+    type master;
+    file "/etc/bind/db.{{ bind9_domain }}";
+    allow-update { none; };
+};
+
+zone "{{ bind9_network }}.in-addr.arpa" {
+    type master;
+    file "/etc/bind/db.{{ bind9_network }}";
+    allow-update { none; };
+};

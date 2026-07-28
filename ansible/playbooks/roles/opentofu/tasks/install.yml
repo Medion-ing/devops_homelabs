@@ -1,0 +1,53 @@
+---
+- name: "Vérifier si OpenTofu est déjà installé"
+  ansible.builtin.stat:
+    path: "{{ opentofu_install_dir }}/tofu"
+  register: opentofu_binary
+
+- name: "Créer le répertoire temporaire"
+  ansible.builtin.file:
+    path: "{{ opentofu_tmp_dir }}"
+    state: directory
+    mode: "0755"
+  when: not opentofu_binary.stat.exists
+
+- name: "Télécharger OpenTofu"
+  ansible.builtin.get_url:
+    url: "{{ opentofu_download_url }}"
+    dest: "{{ opentofu_tmp_dir }}/{{ opentofu_archive_name }}"
+    mode: "0644"
+    timeout: 120
+  when: not opentofu_binary.stat.exists
+
+- name: "Extraire l'archive"
+  ansible.builtin.unarchive:
+    src: "{{ opentofu_tmp_dir }}/{{ opentofu_archive_name }}"
+    dest: "{{ opentofu_tmp_dir }}"
+    remote_src: true
+  when: not opentofu_binary.stat.exists
+
+- name: "Installer le binaire tofu"
+  ansible.builtin.copy:
+    src: "{{ opentofu_tmp_dir }}/tofu"
+    dest: "{{ opentofu_install_dir }}/tofu"
+    owner: root
+    group: root
+    mode: "0755"
+    remote_src: true
+  when: not opentofu_binary.stat.exists
+
+- name: "Vérifier la version installée"
+  ansible.builtin.command:
+    cmd: "{{ opentofu_install_dir }}/tofu version"
+  register: opentofu_version_check
+  changed_when: false
+
+- name: "Afficher la version"
+  ansible.builtin.debug:
+    msg: "OpenTofu version : {{ opentofu_version_check.stdout_lines[0] }}"
+
+- name: "Nettoyer le répertoire temporaire"
+  ansible.builtin.file:
+    path: "{{ opentofu_tmp_dir }}"
+    state: absent
+  when: not opentofu_binary.stat.exists

@@ -1,0 +1,32 @@
+---
+# Version
+keycloak_version: "26.6.2"
+keycloak_archive: "keycloak-{{ keycloak_version }}.tar.gz"
+keycloak_download_url: "https://github.com/keycloak/keycloak/releases/download/{{ keycloak_version }}/{{ keycloak_archive }}"
+
+# Répertoires
+keycloak_install_dir: /opt/keycloak
+keycloak_conf_dir: /opt/keycloak/conf
+keycloak_tmp_dir: /tmp/keycloak_install
+
+# Système
+keycloak_user: keycloak
+keycloak_group: keycloak
+keycloak_java_home: /usr/lib/jvm/java-21-openjdk-amd64
+
+# Réseau
+keycloak_http_port: 8080
+keycloak_hostname: "192.168.1.124"
+
+# PostgreSQL
+keycloak_db_name: keycloak
+keycloak_db_host: "127.0.0.1"
+keycloak_db_port: 5432
+
+# Realm RustFS
+keycloak_config_keycloak_realm: rustfs
+
+# Service
+keycloak_service_name: keycloak
+keycloak_service_enabled: true
+keycloak_service_state: started

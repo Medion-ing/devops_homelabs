@@ -1,0 +1,13 @@
+# Ansible
+*.retry
+
+# Python
+__pycache__/
+*.pyc
+
+# VSCode
+.vscode/
+
+# Secrets
+*.secret
+.env

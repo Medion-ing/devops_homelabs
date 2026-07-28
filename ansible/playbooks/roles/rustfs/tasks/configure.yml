@@ -1,0 +1,64 @@
+---
+- name: "Déployer le fichier d'environnement"
+  ansible.builtin.template:
+    src: rustfs.env.j2
+    dest: "{{ rustfs_env_file_path }}"
+    owner: root
+    group: "{{ rustfs_group }}"
+    mode: "0640"
+  notify: Restart rustfs
+
+- name: "Déployer la configuration d'observabilité"
+  ansible.builtin.template:
+    src: obs.toml.j2
+    dest: "{{ rustfs_obs_config_path }}"
+    owner: root
+    group: "{{ rustfs_group }}"
+    mode: "0640"
+  when: rustfs_obs_enable | bool
+  notify: Restart rustfs
+
+- name: "Déployer le service systemd"
+  ansible.builtin.template:
+    src: rustfs.service.j2
+    dest: "{{ rustfs_systemd_unit_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Systemd daemon-reload
+    - Restart rustfs
+
+- name: "Déployer la configuration logrotate"
+  ansible.builtin.template:
+    src: rustfs.logrotate.j2
+    dest: /etc/logrotate.d/rustfs
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: "Activer et démarrer le service"
+  ansible.builtin.systemd:
+    name: "{{ rustfs_service_name }}"
+    enabled: "{{ rustfs_service_enabled }}"
+    state: "{{ rustfs_service_state }}"
+    daemon_reload: true
+
+- name: "Vérifier que le port API écoute"
+  ansible.builtin.wait_for:
+    host: "127.0.0.1"
+    port: "{{ rustfs_api_port }}"
+    delay: 5
+    timeout: 60
+    state: started
+  tags: rustfs_smoke_test
+
+- name: "Vérifier que le port Console écoute"
+  ansible.builtin.wait_for:
+    host: "127.0.0.1"
+    port: "{{ rustfs_console_port }}"
+    delay: 2
+    timeout: 30
+    state: started
+  when: rustfs_console_enable | bool
+  tags: rustfs_smoke_test

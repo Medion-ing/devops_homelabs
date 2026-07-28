@@ -1,0 +1,48 @@
+---
+- name: "Rafraîchir le token admin"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_keycloak_url }}/realms/master/protocol/openid-connect/token"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      client_id: admin-cli
+      username: "{{ vault_keycloak_admin_user }}"
+      password: "{{ vault_keycloak_admin_password }}"
+      grant_type: password
+    status_code: 200
+  register: keycloak_config_keycloak_token
+  no_log: true
+
+- name: "Vérifier si le client rustfs-s3 existe"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_keycloak_url }}/admin/realms/{{ keycloak_config_keycloak_realm }}/clients?clientId={{ vault_keycloak_client_id }}"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ keycloak_config_keycloak_token.json.access_token }}"
+    status_code: 200
+  register: keycloak_config_client_check
+
+- name: "Créer le client OIDC rustfs-s3"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_keycloak_url }}/admin/realms/{{ keycloak_config_keycloak_realm }}/clients"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ keycloak_config_keycloak_token.json.access_token }}"
+      Content-Type: application/json
+    body_format: json
+    body:
+      clientId: "{{ vault_keycloak_client_id }}"
+      name: "RustFS S3 Console"
+      enabled: true
+      protocol: openid-connect
+      publicClient: false
+      secret: "{{ vault_keycloak_client_secret }}"
+      redirectUris: "{{ keycloak_config_keycloak_client_redirect_uris }}"
+      webOrigins:
+        - "http://192.168.1.124:9001"
+      standardFlowEnabled: true
+      directAccessGrantsEnabled: true
+      attributes:
+        "access.token.lifespan": "3600"
+    status_code: 201
+  when: keycloak_config_client_check.json | length == 0

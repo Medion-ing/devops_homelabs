@@ -1,0 +1,43 @@
+---
+- name: "Déployer la configuration Keycloak"
+  ansible.builtin.template:
+    src: keycloak.conf.j2
+    dest: "{{ keycloak_conf_dir }}/keycloak.conf"
+    owner: "{{ keycloak_user }}"
+    group: "{{ keycloak_group }}"
+    mode: "0640"
+  notify: Restart keycloak
+
+- name: "Déployer le service systemd"
+  ansible.builtin.template:
+    src: keycloak.service.j2
+    dest: "/etc/systemd/system/{{ keycloak_service_name }}.service"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart keycloak
+
+- name: "Build Keycloak (génère les providers optimisés)"
+  ansible.builtin.command:
+    cmd: "{{ keycloak_install_dir }}/bin/kc.sh build --db=postgres"
+  become: true
+  become_user: "{{ keycloak_user }}"
+  register: keycloak_kc_build
+  changed_when: "'Server configuration updated' in keycloak_kc_build.stdout or keycloak_kc_build.rc == 0"
+  environment:
+    JAVA_HOME: "{{ keycloak_java_home }}"
+
+- name: "Activer et démarrer Keycloak"
+  ansible.builtin.systemd:
+    name: "{{ keycloak_service_name }}"
+    enabled: "{{ keycloak_service_enabled }}"
+    state: "{{ keycloak_service_state }}"
+    daemon_reload: true
+
+- name: "Attendre que Keycloak soit disponible"
+  ansible.builtin.wait_for:
+    host: "127.0.0.1"
+    port: "{{ keycloak_http_port }}"
+    delay: 10
+    timeout: 120
+    state: started

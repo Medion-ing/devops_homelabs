@@ -1,0 +1,8 @@
+---
+# ansible-playbook -i inventory/proxmox/hosts.yml playbooks/victoriametrics_single_install.yml --diff -K
+
+- name: Installer VictoriaMetrics single node
+  hosts: victoriametrics
+  become: true
+  roles:
+    - victoriametrics

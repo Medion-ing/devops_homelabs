@@ -1,0 +1,25 @@
+---
+- name: Deploy Prometheus configuration file
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: "{{ prometheus_config_dir }}/prometheus.yml"
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: "0644"
+  notify: Restart prometheus
+
+- name: Deploy Prometheus systemd service
+  ansible.builtin.template:
+    src: prometheus.service.j2
+    dest: /etc/systemd/system/{{ prometheus_service_name }}.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart prometheus
+
+- name: Ensure Prometheus service is enabled and started
+  ansible.builtin.systemd_service:
+    name: "{{ prometheus_service_name }}"
+    enabled: true
+    state: started
+    daemon_reload: true

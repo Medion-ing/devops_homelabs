@@ -1,0 +1,46 @@
+---
+- name: "Installer PostgreSQL"
+  ansible.builtin.package:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - python3-psycopg2
+    state: present
+
+- name: "S'assurer que PostgreSQL est démarré"
+  ansible.builtin.systemd:
+    name: postgresql
+    state: started
+    enabled: true
+
+
+- name: "Créer l'utilisateur et la base Keycloak"
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+
+      psql -tc "SELECT 1 FROM pg_roles WHERE rolname='{{ vault_keycloak_db_user }}'" \
+        | grep -q 1 || \
+        psql -c "CREATE USER {{ vault_keycloak_db_user }} WITH PASSWORD '{{ vault_keycloak_db_password }}';"
+
+      psql -tc "SELECT 1 FROM pg_database WHERE datname='{{ keycloak_db_name }}'" \
+        | grep -q 1 || \
+        psql -c "CREATE DATABASE {{ keycloak_db_name }} OWNER {{ vault_keycloak_db_user }};"
+
+      psql -c "GRANT ALL PRIVILEGES ON DATABASE {{ keycloak_db_name }} TO {{ vault_keycloak_db_user }};"
+    executable: /bin/bash
+  become: true
+  become_user: postgres
+  register: keycloak_pg_setup
+  changed_when: "'CREATE' in keycloak_pg_setup.stdout"
+
+- name: "Vérifier la connexion PostgreSQL"
+  ansible.builtin.shell: |
+    PGPASSWORD="{{ vault_keycloak_db_password }}" psql \
+      -h 127.0.0.1 \
+      -U {{ vault_keycloak_db_user }} \
+      -d {{ keycloak_db_name }} \
+      -c "SELECT version();"
+  register: keycloak_pg_check
+  changed_when: false
+  failed_when: keycloak_pg_check.rc != 0

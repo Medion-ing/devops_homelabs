@@ -1,0 +1,101 @@
+---
+- name: Ensure VictoriaMetrics env file exists
+  ansible.builtin.file:
+    path: "{{ victoriametrics_service_envflag_file }}"
+    state: touch
+    owner: root
+    group: victoriametrics
+    mode: "0644"
+    access_time: preserve
+  when: victoriametrics_service_envflag_enabled | bool
+  notify: Restart VictoriaMetrics single
+
+- name: Ensure VictoriaMetrics config directory exists
+  ansible.builtin.file:
+    path: "{{ victoriametrics_config_dir }}"
+    state: directory
+    owner: root
+    group: victoriametrics
+    mode: "0755"
+
+- name: Ensure VictoriaMetrics dashboards directory exists
+  ansible.builtin.file:
+    path: "{{ victoriametrics_vmui_custom_dashboards_path }}"
+    state: directory
+    owner: root
+    group: victoriametrics
+    mode: "0750"
+  when: victoriametrics_vmui_custom_dashboards_enabled | bool
+
+- name: Deploy VictoriaMetrics VMUI dashboard
+  ansible.builtin.template:
+    src: vmui-dashboards/long-term-homelab.json.j2
+    dest: "{{ victoriametrics_vmui_custom_dashboards_path }}/10-long-term-homelab.json"
+    owner: root
+    group: victoriametrics
+    mode: "0640"
+  when: victoriametrics_vmui_custom_dashboards_enabled | bool
+  notify: Restart VictoriaMetrics single
+
+- name: Build VictoriaMetrics service arguments
+  ansible.builtin.set_fact:
+    victoriametrics_service_args: >-
+      {{
+        victoriametrics_base_args
+        | combine(
+            victoriametrics_stream_aggr_enabled | bool
+            | ternary(
+                {
+                  'streamAggr.config': victoriametrics_stream_aggr_config_file,
+                  'streamAggr.ignoreOldSamples': victoriametrics_stream_aggr_ignore_old_samples | ternary('true', 'false'),
+                  'streamAggr.ignoreFirstIntervals': victoriametrics_stream_aggr_ignore_first_intervals
+                },
+                {}
+              ),
+            recursive=True
+          )
+        | combine(victoriametrics_extra_args, recursive=True)
+      }}
+
+- name: Add keepInput flag when enabled
+  ansible.builtin.set_fact:
+    victoriametrics_service_args: "{{ victoriametrics_service_args | combine({'streamAggr.keepInput': 'true'}) }}"
+  when:
+    - victoriametrics_stream_aggr_enabled | bool
+    - victoriametrics_stream_aggr_keep_input | bool
+
+- name: Add dropInput flag when enabled
+  ansible.builtin.set_fact:
+    victoriametrics_service_args: "{{ victoriametrics_service_args | combine({'streamAggr.dropInput': 'true'}) }}"
+  when:
+    - victoriametrics_stream_aggr_enabled | bool
+    - victoriametrics_stream_aggr_drop_input | bool
+
+- name: Deploy VictoriaMetrics stream aggregation config
+  ansible.builtin.template:
+    src: stream-aggr.yaml.j2
+    dest: "{{ victoriametrics_stream_aggr_config_file }}"
+    owner: root
+    group: victoriametrics
+    mode: "0644"
+  when: victoriametrics_stream_aggr_enabled | bool
+  notify: Reload VictoriaMetrics single
+
+- name: Deploy VictoriaMetrics single systemd unit
+  ansible.builtin.template:
+    src: victoriametrics-single.service.j2
+    dest: "/etc/systemd/system/{{ victoriametrics_service_name }}.service"
+    owner: root
+    group: victoriametrics
+    mode: "0644"
+  notify: Restart VictoriaMetrics single
+
+- name: Ensure systemd daemon is reloaded
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+
+- name: Ensure VictoriaMetrics single service is enabled and started
+  ansible.builtin.systemd_service:
+    name: "{{ victoriametrics_service_name }}"
+    enabled: true
+    state: started

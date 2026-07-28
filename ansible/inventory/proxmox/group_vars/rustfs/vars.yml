@@ -1,0 +1,19 @@
+---
+rustfs_api_port: 9000
+rustfs_console_port: 9001
+
+rustfs_volumes: "/data/rustfs0"
+rustfs_data_dirs:
+  - /data/rustfs0
+
+# Pas d'observabilité ni TLS en homelab
+rustfs_obs_enable: false
+rustfs_tls_enable: false
+
+# --- OIDC Keycloak ---
+rustfs_oidc_enable: true
+rustfs_oidc_config_url: "http://192.168.1.124:8080/realms/rustfs/.well-known/openid-configuration"
+rustfs_oidc_claim_name: "policy"
+rustfs_oidc_redirect_uri: "http://192.168.1.124:9001/rustfs/admin/v3/oidc/callback/keycloak-homelab-poc"
+rustfs_oidc_scopes: "openid,profile,email"
+rustfs_oidc_comment: "Keycloak homelab POC"

@@ -1,0 +1,42 @@
+---
+- name: Ensure grafana directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('grafana') }}"
+    mode: "{{ item.mode | default('0755') }}"
+  loop:
+    - path: /etc/grafana
+    - path: /etc/grafana/provisioning
+    - path: /etc/grafana/provisioning/datasources
+    - path: /etc/grafana/provisioning/dashboards
+    - path: /etc/grafana/provisioning/notifiers
+    - path: /etc/grafana/provisioning/notification
+    - path: /etc/grafana/provisioning/plugins
+    - path: /etc/grafana/provisioning/alerting
+    - path: "{{ grafana_ini.paths.logs }}"
+      owner: grafana
+    - path: "{{ grafana_ini.paths.data }}"
+      owner: grafana
+    - path: "{{ grafana_ini.paths.data }}/dashboards"
+      owner: grafana
+    - path: "{{ grafana_ini.paths.data }}/plugins"
+      owner: grafana
+
+- name: Create grafana main configuration file
+  ansible.builtin.template:
+    src: grafana.ini.j2
+    dest: /etc/grafana/grafana.ini
+    owner: root
+    group: grafana
+    mode: "0640"
+  no_log: "{{ 'false' if lookup('env', 'CI') else 'true' }}"
+  notify: restart_grafana
+
+- name: Enable and start Grafana systemd unit
+  ansible.builtin.systemd:
+    name: grafana-server
+    enabled: true
+    state: started
+    daemon_reload: true

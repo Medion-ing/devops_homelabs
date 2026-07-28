@@ -1,0 +1,10 @@
+---
+- name: Installer RustFS single-node (homelab)
+  hosts: rustfs
+  become: true
+  roles:
+    - rustfs
+
+# Accès direct :
+#   API S3   → http://<IP_VM>:9000
+#   Console  → http://<IP_VM>:9001

@@ -1,0 +1,4 @@
+---
+- name: Installer OpenTofu
+  ansible.builtin.import_tasks: install.yml
+  tags: [opentofu, opentofu_install]

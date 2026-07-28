@@ -1,0 +1,35 @@
+---
+- name: Create Grafana dashboard provider file
+  ansible.builtin.template:
+    src: dashboards-provider.yml.j2
+    dest: /etc/grafana/provisioning/dashboards/ansible-dashboards.yml
+    owner: root
+    group: grafana
+    mode: "0644"
+  notify:
+    - restart_grafana
+    - provisioned dashboards changed
+
+- name: Ensure dashboard target directories exist
+  ansible.builtin.file:
+    path: "{{ grafana_ini.paths.data }}/dashboards/{{ item.path | dirname }}"
+    state: directory
+    owner: grafana
+    group: grafana
+    mode: "0755"
+  loop: "{{ __found_dashboards.files }}"
+  when: grafana_provisioning_dashboards_from_file_structure | bool
+  notify:
+    - provisioned dashboards changed
+
+- name: Copy local dashboard json files
+  ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: "{{ grafana_ini.paths.data }}/dashboards/{{ item.path | basename if not grafana_provisioning_dashboards_from_file_structure else item.path | regex_replace('^' ~ grafana_dashboards_dir ~ '/', '') }}"
+    owner: grafana
+    group: grafana
+    mode: "0644"
+  loop: "{{ __found_dashboards.files }}"
+  notify:
+    - restart_grafana
+    - provisioned dashboards changed

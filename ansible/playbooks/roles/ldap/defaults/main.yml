@@ -1,0 +1,63 @@
+---
+# Domaine LDAP
+ldap_domain: "homelab.local"
+ldap_keycloak_config_ldap_base_dn: "dc=homelab,dc=local"
+ldap_org: "Homelab POC"
+
+# Compte admin LDAP
+ldap_admin_cn: "admin"
+ldap_admin_password: "LdapAdmin2026!"
+
+# OUs
+ldap_ou_users: "users"
+ldap_ou_groups: "groups"
+
+# Groupes → correspondent aux policies RustFS
+ldap_groups:
+  - name: "devlab-rw"
+    description: "Acces readwrite bucket devlab"
+  - name: "datalab-ro"
+    description: "Acces readonly bucket datalab"
+  - name: "sofa-wo"
+    description: "Acces writeonly bucket sofa"
+
+# Users de test
+ldap_users:
+  - uid: "nabster"
+    cn: "Nabster Parket"
+    sn: "Nabster"
+    mail: "medionnarcisse68@gmail.com"
+    password: "Nabster2026!"
+    groups:
+      - "devlab-rw"
+
+  - uid: "ludo"
+    cn: "Ludo Bribaud"
+    sn: "Bribaud"
+    mail: "narcissemedion@gmail.com"
+    password: "Ludo2026!"
+    groups:
+      - "datalab-ro"
+
+  - uid: "bray"
+    cn: "Bray Kagong"
+    sn: "Kagong"
+    mail: "braymadoue@gmail.com"
+    password: "Bray2026!"
+    groups:
+      - "sofa-wo"
+
+# Packages
+ldap_packages:
+  - slapd
+  - ldap-utils
+  - python3-ldap3
+  - debconf-utils
+  - python3-ldap
+
+# TLS (désactivé pour le POC)
+ldap_tls_enable: false
+
+ldap_log_level: 256
+ldap_port: 389
+ldap_service_name: slapd

@@ -1,0 +1,43 @@
+prometheus_version: "3.11.3"
+prometheus_web_listen_address: ":9090"
+prometheus_config_dir: "/etc/prometheus"
+prometheus_data_dir: "/var/lib/prometheus"
+prometheus_install_dir: "/usr/local/bin"
+prometheus_retention_time: "15d"
+prometheus_scrape_interval: "15s"
+prometheus_site: "default"
+prometheus_node_targets:
+  - "localhost:9100"
+
+prometheus_remote_write_keep_metrics:
+  - up
+  - process_.*
+  - prometheus_remote_storage_samples_total
+  - prometheus_remote_storage_samples_failed_total
+  - prometheus_remote_storage_samples_pending
+  - prometheus_remote_storage_enqueue_retries_total
+  - prometheus_remote_storage_samples_retried_total
+  - node_cpu_seconds_total
+  - node_load1
+  - node_load5
+  - node_load15
+  - node_memory_MemTotal_bytes
+  - node_memory_MemAvailable_bytes
+  - node_memory_Buffers_bytes
+  - node_memory_Cached_bytes
+  - node_filesystem_size_bytes
+  - node_filesystem_avail_bytes
+  - node_filesystem_free_bytes
+  - node_disk_reads_completed_total
+  - node_disk_writes_completed_total
+  - node_disk_read_bytes_total
+  - node_disk_written_bytes_total
+  - node_network_receive_bytes_total
+  - node_network_transmit_bytes_total
+  - probe_success
+  - probe_duration_seconds
+  - vault_core_unsealed
+  - vault_core_active
+  - jvm_memory_used_bytes
+  - jvm_memory_max_bytes
+  - http_server_requests_seconds_count

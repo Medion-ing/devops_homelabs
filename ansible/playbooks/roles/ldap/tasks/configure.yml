@@ -1,0 +1,20 @@
+- name: "Déployer le LDIF memberOf"
+  ansible.builtin.template:
+    src: memberof.ldif.j2
+    dest: /tmp/ldap_memberof.ldif
+    mode: "0600"
+
+- name: "Activer le module memberOf"
+  ansible.builtin.command:
+    cmd: ldapmodify -Y EXTERNAL -H ldapi:/// -f /tmp/ldap_memberof.ldif
+  register: ldap_memberof_result
+  changed_when: ldap_memberof_result.rc == 0
+  failed_when:
+    - ldap_memberof_result.rc != 0
+    - "'already exists' not in ldap_memberof_result.stderr | lower"
+    - "'Type or value exists' not in ldap_memberof_result.stderr"
+
+- name: "Nettoyer LDIF memberOf"
+  ansible.builtin.file:
+    path: /tmp/ldap_memberof.ldif
+    state: absent

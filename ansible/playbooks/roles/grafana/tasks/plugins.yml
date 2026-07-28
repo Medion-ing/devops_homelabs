@@ -1,0 +1,12 @@
+---
+- name: Install Grafana plugins
+  ansible.builtin.command:
+    cmd: "grafana cli --homepath /usr/share/grafana plugins install {{ item }}"
+  loop: "{{ grafana_plugins }}"
+  register: grafana_plugin_install
+  changed_when: "'installed' in (grafana_plugin_install.stdout | lower) or 'installed' in (grafana_plugin_install.stderr | lower)"
+  failed_when:
+    - grafana_plugin_install.rc != 0
+    - "'plugin already installed' not in (grafana_plugin_install.stdout | lower)"
+    - "'plugin already installed' not in (grafana_plugin_install.stderr | lower)"
+  notify: restart_grafana

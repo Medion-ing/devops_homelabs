@@ -1,0 +1,15 @@
+---
+- name: Restart bind9
+  ansible.builtin.systemd:
+    name: named
+    state: restarted
+
+- name: Reload bind9
+  ansible.builtin.command:
+    cmd: rndc reload
+  changed_when: false
+
+- name: Restart systemd-resolved
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    state: restarted

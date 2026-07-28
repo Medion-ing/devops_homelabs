@@ -1,0 +1,18 @@
+# Keycloak configuration — géré par Ansible
+
+# Base de données
+db=postgres
+db-url=jdbc:postgresql://{{ keycloak_db_host }}:{{ keycloak_db_port }}/{{ keycloak_db_name }}
+db-username={{ vault_keycloak_db_user }}
+db-password={{ vault_keycloak_db_password }}
+
+# Réseau
+http-enabled=true
+http-port={{ keycloak_http_port }}
+hostname={{ keycloak_hostname }}
+hostname-strict=false
+hostname-strict-https=false
+http-host=0.0.0.0
+
+# Mode (start-dev pour POC, start pour prod)
+# En prod : remplacer par start + TLS

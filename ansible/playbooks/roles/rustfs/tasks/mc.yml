@@ -1,0 +1,36 @@
+---
+- name: "Vérifier si mc est déjà installé"
+  ansible.builtin.stat:
+    path: /usr/local/bin/mc
+  register: rustfs_mc_binary
+
+- name: "Télécharger mc (MinIO Client)"
+  ansible.builtin.get_url:
+    url: "https://dl.min.io/client/mc/release/linux-amd64/mc"
+    dest: /usr/local/bin/mc
+    mode: "0755"
+    owner: root
+    group: root
+    timeout: 60
+  when: not rustfs_mc_binary.stat.exists
+
+- name: "Configurer l'alias mc pour RustFS"
+  ansible.builtin.command:
+    cmd: >
+      mc alias set {{ rustfs_mc_alias }}
+      http://127.0.0.1:{{ rustfs_api_port }}
+      {{ vault_rustfs_access_key }}
+      {{ vault_rustfs_secret_key }}
+  changed_when: false
+  become: false
+
+- name: "Vérifier la connexion mc → RustFS"
+  ansible.builtin.command:
+    cmd: "mc admin info {{ rustfs_mc_alias }}"
+  register: rustfs_mc_info
+  changed_when: false
+  failed_when: false
+
+- name: "Afficher l'état du cluster RustFS"
+  ansible.builtin.debug:
+    msg: "{{ rustfs_mc_info.stdout_lines }}"

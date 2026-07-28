@@ -1,0 +1,6 @@
+---
+- name: Include installation tasks for Node Exporter
+  ansible.builtin.include_tasks: install.yml
+
+- name: Include configuration tasks for Node Exporter
+  ansible.builtin.include_tasks: configure.yml

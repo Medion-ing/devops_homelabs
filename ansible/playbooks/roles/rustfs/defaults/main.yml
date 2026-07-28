@@ -1,0 +1,45 @@
+---
+rustfs_user: rustfs-user
+rustfs_group: rustfs-user
+
+rustfs_binary_name: rustfs
+rustfs_install_dir: /usr/local/bin
+rustfs_archive_name: "rustfs-linux-x86_64-musl-latest.zip"
+rustfs_version: "1.0.0-beta.8"
+
+rustfs_download_url: "https://github.com/rustfs/rustfs/releases/download/{{ rustfs_version }}/{{ rustfs_archive_name }}"
+
+rustfs_data_dirs:
+  - /data/rustfs0
+rustfs_log_dir: /var/log/rustfs
+rustfs_tls_dir: /opt/rustfs/tls
+rustfs_obs_config_path: /etc/default/obs.toml
+rustfs_tmp_dir: /tmp/rustfs_install
+
+rustfs_api_port: 9000
+rustfs_console_port: 9001
+
+rustfs_volumes: "/data/rustfs0"
+
+rustfs_console_enable: true
+rustfs_mc_alias: homelab
+
+rustfs_oidc_enable: true
+
+# Observabilité désactivée en homelab (pas d'OTel collector)
+rustfs_obs_enable: false
+rustfs_obs_log_local: false
+rustfs_tls_enable: false
+
+rustfs_obs_log_path: "/var/log/rustfs/app.log"
+rustfs_obs_log_level: "info"
+rustfs_obs_service_name: "rustfs"
+rustfs_obs_sample_ratio: 1.0
+rustfs_obs_meter_interval: 30
+rustfs_obs_endpoint: "http://localhost:4317"
+
+rustfs_logrotate_rotate: 30
+
+rustfs_service_name: rustfs
+rustfs_service_enabled: true
+rustfs_service_state: started
