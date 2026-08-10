@@ -12,6 +12,16 @@ locals {
       }
     }
 
+   k8s_int_legacy_poc = {
+      name       = "k8s-int-legacy-poc"
+      versioning = true
+      quota_gb   = 5
+      anonymous  = false
+      tags = {
+        app_data = "mount-s3-k8s"
+      }
+    }
+
     docs_data = {
       name       = "rustfs-docs-data"
       versioning = true
@@ -47,6 +57,12 @@ locals {
     app_rw = {
       name        = "app-rw-policy"
       bucket_keys = ["app_data"]
+      actions_rw  = true
+    }
+
+    k8s_int_legacy_poc_rw = {
+      name        = "k8s-int-legacy-poc-rw"
+      bucket_keys = ["k8s_int_legacy_poc"]
       actions_rw  = true
     }
 
@@ -92,5 +108,13 @@ locals {
       policy_key = "test_import"
       group_keys = []
     }
+
+    k8s_int_legacy_poc_user = {
+      name       = "k8s-int-legacy-poc-user"
+      secret_key = var.k8s_int_legacy_poc_user_secret
+      policy_key = "k8s_int_legacy_poc_rw"
+      group_keys = []
+    }
+
   }
 }
