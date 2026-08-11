@@ -1,0 +1,50 @@
+---
+images:
+  # Source: quay.io/k8scsi/csi-node-driver-registrar:v2.16.0
+  registrar: cr.yandex/crp9ftr22d26age3hulg/yandex-cloud/csi-s3/csi-node-driver-registrar:v2.16.0
+  # Source: quay.io/k8scsi/csi-provisioner:v6.2.0
+  provisioner: cr.yandex/crp9ftr22d26age3hulg/yandex-cloud/csi-s3/csi-provisioner:v6.2.0
+  # Main image
+  csi: cr.yandex/crp9ftr22d26age3hulg/yandex-cloud/csi-s3/csi-s3-driver:0.43.7
+
+storageClass:
+  # Specifies whether the storage class should be created
+  create: false
+  # Name
+  name: csi-s3
+  # Use a single bucket for all dynamically provisioned persistent volumes
+  singleBucket: ""
+  # mounter to use - either geesefs, s3fs or rclone (default geesefs)
+  mounter: geesefs
+  # GeeseFS mount options
+  mountOptions: "--memory-limit 1000 --dir-mode 0777 --file-mode 0666"
+  # Volume reclaim policy
+  reclaimPolicy: Retain
+  # Annotations for the storage class
+  # Example:
+  # annotations:
+  #   storageclass.kubernetes.io/is-default-class: "true"
+  annotations: {}
+
+secret:
+  # Specifies whether the secret should be created
+  create: true
+  # Name of the secret
+  name: csi-s3-secret
+  # S3 Access Key
+  accessKey: rustfsadmin01
+  # S3 Secret Key
+  secretKey: changeme-homelab-2026
+  # Endpoint
+  endpoint: http://192.168.1.124:9000
+  # Region
+  region: ""
+
+tolerations:
+  all: false
+  node: []
+  controller: []
+
+nodeSelector: {}
+
+kubeletPath: /var/lib/kubelet
