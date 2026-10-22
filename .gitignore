@@ -25,6 +25,8 @@ Thumbs.db
 **/*secret*
 **/*password*
 **/*passwd*
+**/vault.yml
+**/.vault_pass
 
 
 #################################################
