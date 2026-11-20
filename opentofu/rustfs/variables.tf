@@ -1,9 +1,3 @@
-# =============================================================================
-# variables.tf — Secrets uniquement
-# Toute la configuration métier est dans locals.tf.
-# Ces valeurs sont fournies via terraform.tfvars (non commité) ou ansible-vault.
-# =============================================================================
-
 variable "rustfs_admin_access_key" {
   type        = string
   description = "Access key du compte admin RustFS"
@@ -37,11 +31,5 @@ variable "test_import_user_secret" {
 variable "k8s_int_legacy_poc_user_secret" {
   type        = string
   description = "Secret key de l'utilisateur k8s-int-legacy-poc-user"
-  sensitive   = true
-}
-
-variable "tofu_bucket_user_secret" {
-  type        = string
-  description = "Secret key de l'utilisateur tofu-bucket-user"
   sensitive   = true
 }

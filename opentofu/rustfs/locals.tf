@@ -22,16 +22,6 @@ locals {
       }
     }
 
-   tofu_bucket = {
-      name       = "tofu-bucket"
-      versioning = true
-      quota_gb   = 50
-      anonymous  = false
-      tags = {
-        app_data = "tofu-states"
-      }
-    }
-
     docs_data = {
       name       = "rustfs-docs-data"
       versioning = true
@@ -73,12 +63,6 @@ locals {
     k8s_int_legacy_poc_rw = {
       name        = "k8s-int-legacy-poc-rw"
       bucket_keys = ["k8s_int_legacy_poc"]
-      actions_rw  = true
-    }
-
-    tofu_bucket_rw = {
-      name        = "tofu-bucket-rw"
-      bucket_keys = ["tofu_bucket"]
       actions_rw  = true
     }
 
@@ -129,13 +113,6 @@ locals {
       name       = "k8s-int-legacy-poc-user"
       secret_key = var.k8s_int_legacy_poc_user_secret
       policy_key = "k8s_int_legacy_poc_rw"
-      group_keys = []
-    }
-
-    tofu_bucket_user = {
-      name       = "tofu-bucket-user"
-      secret_key = var.tofu_bucket_user_secret
-      policy_key = "tofu_bucket_rw"
       group_keys = []
     }
 
