@@ -1,9 +1,3 @@
-# =============================================================================
-# variables.tf — Secrets uniquement
-# Toute la configuration métier est dans locals.tf.
-# Ces valeurs sont fournies via terraform.tfvars (non commité) ou ansible-vault.
-# =============================================================================
-
 variable "rustfs_admin_access_key" {
   type        = string
   description = "Access key du compte admin RustFS"

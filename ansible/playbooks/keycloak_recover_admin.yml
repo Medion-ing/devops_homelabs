@@ -1,0 +1,32 @@
+---
+- name: Récupérer l'accès administrateur Keycloak
+  hosts: rustfs
+  become: true
+  vars:
+    keycloak_install_dir: /opt/keycloak
+    keycloak_service_name: keycloak
+  tasks:
+    - name: Arrêter Keycloak pour créer un administrateur temporaire
+      ansible.builtin.systemd:
+        name: "{{ keycloak_service_name }}"
+        state: stopped
+
+    - name: Créer un compte administrateur temporaire
+      block:
+        - name: Exécuter la commande de récupération Keycloak
+          ansible.builtin.command:
+            argv:
+              - "{{ keycloak_install_dir }}/bin/kc.sh"
+              - bootstrap-admin
+              - user
+              - "--username={{ vault_keycloak_recovery_user }}"
+              - "--password:env=KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD"
+          become_user: keycloak
+          environment:
+            KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD: "{{ vault_keycloak_recovery_password }}"
+          no_log: true
+      always:
+        - name: Redémarrer Keycloak après la récupération
+          ansible.builtin.systemd:
+            name: "{{ keycloak_service_name }}"
+            state: started

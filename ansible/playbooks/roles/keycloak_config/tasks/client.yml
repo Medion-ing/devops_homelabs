@@ -46,3 +46,18 @@
         "access.token.lifespan": "3600"
     status_code: 201
   when: keycloak_config_client_check.json | length == 0
+
+- name: "Mettre à jour le secret du client OIDC RustFS existant"
+  ansible.builtin.uri:
+    url: "{{ keycloak_config_keycloak_url }}/admin/realms/{{ keycloak_config_keycloak_realm }}/clients/{{ keycloak_config_client_check.json[0].id }}/client-secret"
+    method: PUT
+    headers:
+      Authorization: "****** keycloak_config_keycloak_token.json.access_token }}"
+      Content-Type: application/json
+    body_format: json
+    body:
+      type: secret
+      value: "{{ vault_keycloak_client_secret }}"
+    status_code: [200, 204]
+  when: keycloak_config_client_check.json | length > 0
+  no_log: true

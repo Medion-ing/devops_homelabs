@@ -1,5 +1,5 @@
 locals {
-  rustfs_host = "192.168.1.124:9000"
+  rustfs_host = "10.42.0.245:9000"
 
   bucket_list = {
     app_data = {
