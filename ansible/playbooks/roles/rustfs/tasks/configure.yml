@@ -52,6 +52,7 @@
     timeout: 60
     state: started
   tags: rustfs_smoke_test
+  when: not ansible_check_mode
 
 - name: "Vérifier que le port Console écoute"
   ansible.builtin.wait_for:
@@ -60,5 +61,7 @@
     delay: 2
     timeout: 30
     state: started
-  when: rustfs_console_enable | bool
   tags: rustfs_smoke_test
+  when:
+    - rustfs_console_enable | bool
+    - not ansible_check_mode

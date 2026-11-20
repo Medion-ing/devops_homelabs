@@ -39,3 +39,9 @@ variable "k8s_int_legacy_poc_user_secret" {
   description = "Secret key de l'utilisateur k8s-int-legacy-poc-user"
   sensitive   = true
 }
+
+variable "tofu_bucket_user_secret" {
+  type        = string
+  description = "Secret key de l'utilisateur tofu-bucket-user"
+  sensitive   = true
+}

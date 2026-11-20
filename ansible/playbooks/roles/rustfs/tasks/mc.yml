@@ -12,7 +12,9 @@
     owner: root
     group: root
     timeout: 60
-  when: not rustfs_mc_binary.stat.exists
+  when:
+    - not ansible_check_mode
+    - not rustfs_mc_binary.stat.exists
 
 - name: "Configurer l'alias mc pour RustFS"
   ansible.builtin.command:
@@ -23,6 +25,7 @@
       {{ vault_rustfs_secret_key }}
   changed_when: false
   become: false
+  when: not ansible_check_mode
 
 - name: "Vérifier la connexion mc → RustFS"
   ansible.builtin.command:
@@ -30,7 +33,9 @@
   register: rustfs_mc_info
   changed_when: false
   failed_when: false
+  when: not ansible_check_mode
 
 - name: "Afficher l'état du cluster RustFS"
   ansible.builtin.debug:
     msg: "{{ rustfs_mc_info.stdout_lines }}"
+  when: not ansible_check_mode

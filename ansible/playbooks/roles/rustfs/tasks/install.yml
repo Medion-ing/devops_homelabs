@@ -26,6 +26,7 @@
     path: "{{ rustfs_tmp_dir }}"
     state: directory
     mode: "0755"
+  when: not ansible_check_mode
 
 - name: "Créer les répertoires de données"
   ansible.builtin.file:
@@ -58,12 +59,14 @@
     dest: "{{ rustfs_tmp_dir }}/{{ rustfs_archive_name }}"
     mode: "0644"
     timeout: 120
+  when: not ansible_check_mode
 
 - name: "Extraire l'archive"
   ansible.builtin.unarchive:
     src: "{{ rustfs_tmp_dir }}/{{ rustfs_archive_name }}"
     dest: "{{ rustfs_tmp_dir }}"
     remote_src: true
+  when: not ansible_check_mode
 
 
 - name: "Installer le binaire dans {{ rustfs_install_dir }}"
@@ -74,10 +77,12 @@
     group: root
     mode: "0755"
     remote_src: true
+  when: not ansible_check_mode
 
 - name: "Vérifier la version installée"
   ansible.builtin.command:
     cmd: "{{ rustfs_install_dir }}/{{ rustfs_binary_name }} --version"
+  check_mode: false
   register: rustfs_version_check
   changed_when: false
   failed_when: false
@@ -90,3 +95,4 @@
   ansible.builtin.file:
     path: "{{ rustfs_tmp_dir }}"
     state: absent
+  when: not ansible_check_mode
